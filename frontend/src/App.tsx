@@ -6,6 +6,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import ChatPage from './pages/ChatPage';
+import InterviewResult from './pages/InterviewResult';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
             <Route element={<ProtectedRoute />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/chats/:id" element={<ChatPage />} />
+              <Route path="/chats/:id/result" element={<InterviewResult />} />
               {/* Redirect legacy or unknown routes to dashboard if logged in, else landing */}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>

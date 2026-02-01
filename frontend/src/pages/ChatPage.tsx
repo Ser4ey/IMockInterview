@@ -2,10 +2,10 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Container, Paper, Typography, Box, TextField, IconButton, 
-  CircularProgress, Avatar, Chip 
+  CircularProgress, Avatar, Chip, Button, Snackbar, Alert
 } from '@mui/material';
 import { Send as SendIcon, ArrowBack as ArrowBackIcon, Person, SmartToy } from '@mui/icons-material';
-import { getChat, getMessages, sendMessage } from '../api/chats';
+import { getChat, getMessages, sendMessage, finishChat } from '../api/chats';
 import { Chat, Message, MessageRole, ChatStatus } from '../types/chat';
 
 const ChatPage: React.FC = () => {
@@ -16,6 +16,7 @@ const ChatPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const chatId = Number(id);
@@ -53,6 +54,8 @@ const ChatPage: React.FC = () => {
       try {
         const msgs = await getMessages(chatId);
         setMessages(msgs);
+        
+        // Also refresh chat status if needed, but msgs is enough for now
       } catch (error) {
         console.error('Polling error', error);
       }
@@ -81,11 +84,25 @@ const ChatPage: React.FC = () => {
 
       await sendMessage(chatId, { content });
       // The polling will catch the real message and the AI response eventually
-    } catch (error) {
-      console.error('Failed to send message', error);
-      // Revert optimistic update if needed, but for now simple error log
+    } catch (err: any) {
+      console.error('Failed to send message', err);
+      setError(err.response?.data?.detail || "Failed to send message");
+      // Revert optimistic update if needed
     } finally {
       setSending(false);
+    }
+  };
+
+  const handleFinish = async () => {
+    if (!confirm("Finish interview and get feedback?")) return;
+    setLoading(true);
+    try {
+        await finishChat(chatId);
+        navigate(`/chats/${chatId}/result`);
+    } catch (err: any) {
+        console.error("Failed to finish", err);
+        setError(err.response?.data?.detail || "Failed to finish interview");
+        setLoading(false);
     }
   };
 
@@ -126,10 +143,17 @@ const ChatPage: React.FC = () => {
             </Box>
           </Box>
         </Box>
-        <Chip 
-          label={chat.status} 
-          color={chat.status === ChatStatus.ACTIVE ? 'success' : 'default'} 
-        />
+        <Box display="flex" alignItems="center" gap={2}>
+            {chat.status === ChatStatus.ACTIVE && (
+                <Button variant="outlined" color="primary" onClick={handleFinish}>
+                    Finish
+                </Button>
+            )}
+            <Chip 
+              label={chat.status} 
+              color={chat.status === ChatStatus.ACTIVE ? 'success' : 'default'} 
+            />
+        </Box>
       </Paper>
 
       {/* Messages Area */}
@@ -200,6 +224,10 @@ const ChatPage: React.FC = () => {
           </IconButton>
         </Box>
       </Paper>
+
+      <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError(null)}>
+        <Alert severity="error" onClose={() => setError(null)}>{error}</Alert>
+      </Snackbar>
     </Container>
   );
 };

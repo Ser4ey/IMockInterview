@@ -25,3 +25,8 @@ export const getMessages = async (chatId: number): Promise<Message[]> => {
     const response = await client.get<Message[]>(`/chats/${chatId}/messages`);
     return response.data;
 };
+
+export const finishChat = async (chatId: number): Promise<Chat> => {
+    const response = await client.post<Chat>(`/chats/${chatId}/finish`);
+    return response.data;
+};

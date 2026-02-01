@@ -1,8 +1,10 @@
 from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from app.repositories.chat_repository import chat_repo, message_repo
 from app.services.yandex_gpt import YandexGPTService
 from app.models.chat import Chat, Message, MessageRole, ChatStatus
+from app.models.user import User
 from app.schemas.chat import ChatCreate
 
 class InterviewService:
@@ -15,12 +17,7 @@ class InterviewService:
         chat_data["user_id"] = user_id
         chat = await chat_repo.create(db, obj_in=chat_data)
 
-        # 2. Generate initial greeting/questions
-        # Note: We can make this async background task if it takes too long, 
-        # but for now let's do it inline to ensure user sees something immediately.
-        # Or better: Just a system greeting, and then user says "Hello" or "Ready".
-        # BUT the plan says: "Создание чата: генерация приветствия от ИИ."
-        
+        # 2. Generate initial greeting
         greeting = f"Здравствуйте! Я ваш интервьюер на позицию {chat_in.position} ({chat_in.level}). Мы можем начать, когда вы будете готовы. Расскажите немного о себе."
         
         await message_repo.create(db, obj_in={
@@ -31,42 +28,35 @@ class InterviewService:
         
         return chat
 
-    async def process_user_message(self, db: AsyncSession, chat_id: int, content: str):
-        # 1. Save User Message
-        await message_repo.create(db, obj_in={
-            "chat_id": chat_id,
-            "role": MessageRole.USER,
-            "content": content
-        })
-
+    async def finish_interview(self, db: AsyncSession, chat_id: int) -> Chat:
+        # 1. Get Chat
+        chat = await chat_repo.get(db, id=chat_id)
+        if not chat:
+            return None 
+            
         # 2. Get History
         history_msgs = await message_repo.get_multi_by_chat(db, chat_id=chat_id)
         chat_history = [{"role": msg.role, "content": msg.content} for msg in history_msgs]
+        
+        # 3. Analyze
+        feedback = await self.ai_service.analyze_interview(chat_history)
+        
+        # 4. Update Chat
+        chat.feedback = feedback
+        chat.status = ChatStatus.COMPLETED
+        db.add(chat)
+        await db.commit()
+        await db.refresh(chat)
+        
+        return chat
 
-        # 3. Call AI
-        ai_response_text = await self.ai_service.conduct_interview_step(chat_history, content)
-
-        # 4. Save AI Response
-        await message_repo.create(db, obj_in={
-            "chat_id": chat_id,
-            "role": MessageRole.AI,
-            "content": ai_response_text
-        })
-
-    async def generate_ai_response_task(self, db: AsyncSession, chat_id: int, user_message: str):
+    async def generate_ai_response_task(self, db: AsyncSession, chat_id: int, user_message: str, user_id: int):
         """
         Wrapper for background task to ensure DB session is handled if needed.
-        Actually, FastAPI BackgroundTasks runs after the response, so the original session might be closed.
-        We need a new session or pass the session if we are sure it stays open (Dependency injection usually closes it).
-        Best practice: create a new session inside the background task.
         """
         from app.db.session import AsyncSessionLocal
         
         async with AsyncSessionLocal() as session:
-             # We need to re-fetch/save using this new session
-             # But wait, we already saved the user message in the main request.
-             # So we just need to fetch history and save AI response.
-             
              # Re-fetch history
              history_msgs = await message_repo.get_multi_by_chat(session, chat_id=chat_id)
              chat_history = [{"role": msg.role, "content": msg.content} for msg in history_msgs]
@@ -80,5 +70,14 @@ class InterviewService:
                 "role": MessageRole.AI,
                 "content": ai_response_text
              })
+
+             # Increment User Usage
+             result = await session.execute(select(User).filter(User.id == user_id))
+             user = result.scalars().first()
+             if user:
+                 user.requests_count += 1
+                 session.add(user)
+                 await session.commit()
+
 
 interview_service = InterviewService()
