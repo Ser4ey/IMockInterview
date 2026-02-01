@@ -1,26 +1,33 @@
-import { useState } from 'react'
-import { Button, Container, Typography, Box } from '@mui/material'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import MainLayout from './layouts/MainLayout';
+import Landing from './pages/Landing';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Dashboard from './pages/Dashboard';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <Container maxWidth="sm">
-      <Box sx={{ my: 4, textAlign: 'center' }}>
-        <Typography variant="h2" component="h1" gutterBottom>
-          IMock
-        </Typography>
-        <Typography variant="h5" component="h2" gutterBottom>
-          AI Interview Platform
-        </Typography>
-        <Box sx={{ mt: 4 }}>
-          <Button variant="contained" onClick={() => setCount((count) => count + 1)}>
-            count is {count}
-          </Button>
-        </Box>
-      </Box>
-    </Container>
-  )
+    <AuthProvider>
+      <Router>
+        <MainLayout>
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            
+            {/* Protected Routes */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              {/* Redirect legacy or unknown routes to dashboard if logged in, else landing */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Route>
+          </Routes>
+        </MainLayout>
+      </Router>
+    </AuthProvider>
+  );
 }
 
-export default App
+export default App;
