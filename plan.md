@@ -54,17 +54,17 @@
 3.  **API Client:**
     *   [x] Настройка Axios инстанса (интерсепторы для добавления Bearer токена и авто-обновления токена).
 
-## Этап 3: Интеграция с ИИ (Backend) (1 запрос)
+## Этап 3: Интеграция с ИИ (Backend) (Выполнено)
 *Цель: Научить бэкенд общаться с "мозгами" проекта.*
 
 1.  **AI Abstraction Layer:**
-    *   Создание абстрактного базового класса `AIService`.
-    *   Реализация конкретного класса `YandexGPTService`.
-    *   Интеграция Yandex Cloud SDK.
+    *   [x] Создание абстрактного базового класса `AIService`.
+    *   [x] Реализация конкретного класса `YandexGPTService`.
+    *   [x] Интеграция Yandex Cloud SDK (REST API).
 2.  **Prompt Engineering (System Prompts):**
-    *   Метод `generate_interview_questions(position, level)` -> JSON list.
-    *   Метод `conduct_interview_step(chat_history, message)` -> AI response.
-    *   Метод `analyze_interview(chat_history)` -> Feedback report.
+    *   [x] Метод `generate_interview_questions(position, level)` -> JSON list.
+    *   [x] Метод `conduct_interview_step(chat_history, message)` -> AI response.
+    *   [x] Метод `analyze_interview(chat_history)` -> Feedback report.
 
 ## Этап 4: Функционал Собеседований (Backend + Frontend) (1 запрос)
 *Цель: Реализовать основной бизнес-процесс.*
