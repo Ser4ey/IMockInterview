@@ -25,20 +25,20 @@
 4.  **Docker Environment:** (Выполнено)
     *   [x] Написание `docker-compose.yml` для локальной разработки.
 
-## Этап 1: Ядро Backend и Аутентификация (1 запрос)
+## Этап 1: Ядро Backend и Аутентификация (Выполнено)
 *Цель: Реализовать безопасный доступ и работу с БД.*
 
 1.  **Архитектура БД:**
-    *   Настройка SQLAlchemy (Async engine) и Alembic для миграций.
-    *   Реализация базового класса `BaseRepository` (CRUD операции).
+    *   [x] Настройка SQLAlchemy (Async engine) и Alembic для миграций.
+    *   [x] Реализация базового класса `BaseRepository` (CRUD операции).
 2.  **Модели пользователей:**
-    *   Создание модели `User` (email, password_hash, tariff, requests_count).
-    *   Миграция БД.
+    *   [x] Создание модели `User` (email, password_hash, tariff, requests_count).
+    *   [x] Миграция БД.
 3.  **Модуль Auth:**
-    *   Реализация утилит для хеширования паролей.
-    *   Реализация JWT (выпуск access/refresh токенов).
-    *   Эндпоинты: `/auth/register`, `/auth/login`, `/auth/me`, `/auth/refresh`.
-    *   Dependency `get_current_user` для защиты роутов.
+    *   [x] Реализация утилит для хеширования паролей.
+    *   [x] Реализация JWT (выпуск access/refresh токенов).
+    *   [x] Эндпоинты: `/auth/register`, `/auth/login`, `/auth/me`, `/auth/refresh`.
+    *   [x] Dependency `get_current_user` для защиты роутов.
 
 ## Этап 2: Ядро Frontend и UI-кит (1 запрос)
 *Цель: Сделать "скелет" приложения, чтобы можно было "натягивать" функционал.*
