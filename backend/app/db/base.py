@@ -1,3 +1,3 @@
 from app.db.session import Base
 from app.models.user import User
-# Import other models here
+from app.models.chat import Chat, Message
