@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite+aiosqlite:///./imock.db
+    # env_file:
+    #   - ./backend/.env
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      # For dev, we might want to use node image directly instead of nginx build
+      # But for "NoDemo" we stick to production-like or simple dev setup.
+      # Let's use a dev setup for now in compose to allow hot reload if mapped, 
+      # but standard Dockerfile is multi-stage for prod.
+      # For local dev via compose, we often override.
+    # Overriding for development to enable hot-reload
+    image: node:18-alpine
+    working_dir: /app
+    command: npm run dev -- --host
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  sqlite_data:
