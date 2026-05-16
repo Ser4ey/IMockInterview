@@ -9,7 +9,7 @@ class MessageBase(BaseModel):
     content: str
 
 class MessageCreate(MessageBase):
-    pass
+    role: MessageRole = MessageRole.USER
 
 class Message(MessageBase):
     id: int

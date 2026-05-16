@@ -21,8 +21,8 @@ class Chat(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     # Relationships
-    user = relationship("User", back_populates="chats")
-    messages = relationship("Message", back_populates="chat", cascade="all, delete-orphan")
+    user = relationship("app.models.user.User", back_populates="chats")
+    messages = relationship("app.models.chat.Message", back_populates="chat", cascade="all, delete-orphan")
 
 class MessageRole(str, enum.Enum):
     USER = "user"
@@ -38,4 +38,4 @@ class Message(Base):
     content = Column(Text, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    chat = relationship("Chat", back_populates="messages")
+    chat = relationship("app.models.chat.Chat", back_populates="messages")

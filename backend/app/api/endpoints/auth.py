@@ -26,9 +26,9 @@ async def login_access_token(
     user = result.scalars().first()
     
     if not user or not security.verify_password(form_data.password, user.hashed_password):
-        raise HTTPException(status_code=400, detail="Incorrect email or password")
+        raise HTTPException(status_code=400, detail="Неверный email или пароль")
     elif not user.is_active:
-        raise HTTPException(status_code=400, detail="Inactive user")
+        raise HTTPException(status_code=400, detail="Пользователь неактивен")
         
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     return {
@@ -37,6 +37,12 @@ async def login_access_token(
         ),
         "token_type": "bearer",
     }
+
+@router.post("/login", response_model=token_schema.Token)
+async def login(
+    db: AsyncSession = Depends(get_db), form_data: OAuth2PasswordRequestForm = Depends()
+) -> Any:
+    return await login_access_token(db=db, form_data=form_data)
 
 @router.post("/register", response_model=user_schema.User)
 async def register_user(
@@ -52,7 +58,7 @@ async def register_user(
     if user:
         raise HTTPException(
             status_code=400,
-            detail="The user with this username already exists in the system",
+            detail="Пользователь с таким email уже существует",
         )
     
     hashed_password = security.get_password_hash(user_in.password)

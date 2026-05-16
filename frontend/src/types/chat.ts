@@ -1,13 +1,17 @@
-export enum ChatStatus {
-    ACTIVE = "active",
-    COMPLETED = "completed"
-}
+export const ChatStatus = {
+    ACTIVE: "active",
+    COMPLETED: "completed",
+} as const;
 
-export enum MessageRole {
-    USER = "user",
-    AI = "ai",
-    SYSTEM = "system"
-}
+export type ChatStatus = (typeof ChatStatus)[keyof typeof ChatStatus];
+
+export const MessageRole = {
+    USER: "user",
+    AI: "ai",
+    SYSTEM: "system",
+} as const;
+
+export type MessageRole = (typeof MessageRole)[keyof typeof MessageRole];
 
 export interface Message {
     id: number;

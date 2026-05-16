@@ -1,14 +1,14 @@
 import React from 'react';
-import { Box, Container, Typography, Link } from '@mui/material';
+import { Box, Container, Link, Typography } from '@mui/material';
 
 const Footer: React.FC = () => {
   return (
-    <Box component="footer" sx={{ bgcolor: 'background.paper', py: 6, mt: 'auto' }}>
+    <Box component="footer" sx={{ py: 4, mt: 'auto' }}>
       <Container maxWidth="lg">
         <Typography variant="body2" color="text.secondary" align="center">
-          {'Copyright © '}
+          {'IMock © '}
           <Link color="inherit" href="https://imock.ai/">
-            IMock
+            AI-тренажер собеседований
           </Link>{' '}
           {new Date().getFullYear()}
           {'.'}

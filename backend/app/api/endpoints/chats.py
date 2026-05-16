@@ -24,7 +24,7 @@ async def create_chat(
     if current_user.tariff == "free" and current_user.requests_count >= 20:
          raise HTTPException(
             status_code=402, 
-            detail="Free limit exceeded (20 requests). Please upgrade."
+            detail="Лимит бесплатного тарифа исчерпан: 20 запросов. Обновите тариф, чтобы продолжить."
         )
 
     chat = await interview_service.start_interview(db, user_id=current_user.id, chat_in=chat_in)
@@ -55,14 +55,19 @@ async def read_chat(
     """
     chat = await chat_repo.get(db, id=chat_id)
     if not chat:
-        raise HTTPException(status_code=404, detail="Chat not found")
+        raise HTTPException(status_code=404, detail="Чат не найден")
     if chat.user_id != current_user.id:
-        raise HTTPException(status_code=400, detail="Not enough permissions")
+        raise HTTPException(status_code=400, detail="Недостаточно прав")
     
     # Manually fetch messages to ensure order
     messages = await message_repo.get_multi_by_chat(db, chat_id=chat_id)
-    chat.messages = messages
-    return chat
+    
+    # Avoid assigning to chat.messages to prevent implicit lazy load (MissingGreenlet)
+    chat_dto = Chat.model_validate(chat)
+    return ChatWithMessages(
+        **chat_dto.model_dump(),
+        messages=messages
+    )
 
 @router.post("/{chat_id}/messages", response_model=Message)
 async def create_message(
@@ -78,18 +83,23 @@ async def create_message(
     """
     chat = await chat_repo.get(db, id=chat_id)
     if not chat:
-        raise HTTPException(status_code=404, detail="Chat not found")
+        raise HTTPException(status_code=404, detail="Чат не найден")
     if chat.user_id != current_user.id:
-        raise HTTPException(status_code=400, detail="Not enough permissions")
+        raise HTTPException(status_code=400, detail="Недостаточно прав")
 
     if chat.status == ChatStatus.COMPLETED:
-        raise HTTPException(status_code=400, detail="Interview is already completed")
+        raise HTTPException(status_code=400, detail="Интервью уже завершено")
+
+    # Check turn-based rule
+    last_msg = await message_repo.get_last_message(db, chat_id=chat_id)
+    if last_msg and last_msg.role == MessageRole.USER:
+        raise HTTPException(status_code=400, detail="Дождитесь ответа AI")
 
     # Check Limits
     if current_user.tariff == "free" and current_user.requests_count >= 20:
          raise HTTPException(
             status_code=402, 
-            detail="Free limit exceeded (20 requests). Please upgrade."
+            detail="Лимит бесплатного тарифа исчерпан: 20 запросов. Обновите тариф, чтобы продолжить."
         )
 
     # Save User Message
@@ -110,6 +120,57 @@ async def create_message(
 
     return user_message
 
+@router.post("/{chat_id}/retry", response_model=Any)
+async def retry_message(
+    *,
+    db: AsyncSession = Depends(deps.get_db),
+    chat_id: int,
+    current_user: User = Depends(deps.get_current_user),
+    background_tasks: BackgroundTasks,
+) -> Any:
+    """
+    Retry the last message generation if it failed or if the last message is from user.
+    """
+    chat = await chat_repo.get(db, id=chat_id)
+    if not chat:
+        raise HTTPException(status_code=404, detail="Чат не найден")
+    if chat.user_id != current_user.id:
+        raise HTTPException(status_code=400, detail="Недостаточно прав")
+    
+    if chat.status == ChatStatus.COMPLETED:
+        raise HTTPException(status_code=400, detail="Интервью уже завершено")
+
+    # Check Limits
+    if current_user.tariff == "free" and current_user.requests_count >= 20:
+         raise HTTPException(
+            status_code=402, 
+            detail="Лимит бесплатного тарифа исчерпан: 20 запросов. Обновите тариф, чтобы продолжить."
+        )
+
+    last_msg = await message_repo.get_last_message(db, chat_id=chat_id)
+    if not last_msg:
+         raise HTTPException(status_code=400, detail="Нет сообщения для повторной генерации")
+         
+    # If last message is SYSTEM (Error), remove it and proceed to retry the user message before it
+    if last_msg.role == MessageRole.SYSTEM:
+         await message_repo.remove(db, id=last_msg.id)
+         last_msg = await message_repo.get_last_message(db, chat_id=chat_id)
+    
+    if not last_msg or last_msg.role != MessageRole.USER:
+         role = last_msg.role if last_msg else "нет сообщения"
+         raise HTTPException(status_code=400, detail=f"Последнее сообщение не от пользователя ({role}), повторять нечего")
+         
+    # Trigger AI in background
+    background_tasks.add_task(
+        interview_service.generate_ai_response_task, 
+        db=None, 
+        chat_id=chat_id, 
+        user_message=last_msg.content,
+        user_id=current_user.id
+    )
+
+    return {"status": "ok", "message": "Повторная генерация запущена"}
+
 @router.post("/{chat_id}/finish", response_model=Chat)
 async def finish_chat(
     *,
@@ -122,9 +183,9 @@ async def finish_chat(
     """
     chat = await chat_repo.get(db, id=chat_id)
     if not chat:
-        raise HTTPException(status_code=404, detail="Chat not found")
+        raise HTTPException(status_code=404, detail="Чат не найден")
     if chat.user_id != current_user.id:
-        raise HTTPException(status_code=400, detail="Not enough permissions")
+        raise HTTPException(status_code=400, detail="Недостаточно прав")
         
     chat = await interview_service.finish_interview(db, chat_id=chat_id)
     return chat
@@ -141,9 +202,9 @@ async def read_messages(
     """
     chat = await chat_repo.get(db, id=chat_id)
     if not chat:
-        raise HTTPException(status_code=404, detail="Chat not found")
+        raise HTTPException(status_code=404, detail="Чат не найден")
     if chat.user_id != current_user.id:
-        raise HTTPException(status_code=400, detail="Not enough permissions")
+        raise HTTPException(status_code=400, detail="Недостаточно прав")
         
     messages = await message_repo.get_multi_by_chat(db, chat_id=chat_id)
     return messages

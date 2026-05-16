@@ -30,5 +30,14 @@ class MessageRepository(BaseRepository[Message]):
         )
         return result.scalars().all()
 
+    async def get_last_message(self, db: AsyncSession, *, chat_id: int) -> Optional[Message]:
+        result = await db.execute(
+            select(Message)
+            .filter(Message.chat_id == chat_id)
+            .order_by(Message.created_at.desc(), Message.id.desc())
+            .limit(1)
+        )
+        return result.scalars().first()
+
 chat_repo = ChatRepository(Chat)
 message_repo = MessageRepository(Message)

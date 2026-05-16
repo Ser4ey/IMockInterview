@@ -1,5 +1,5 @@
 import client from './client';
-import { Chat, CreateChatRequest, Message, SendMessageRequest } from '../types/chat';
+import type { Chat, CreateChatRequest, Message, SendMessageRequest } from '../types/chat';
 
 export const getChats = async (): Promise<Chat[]> => {
     const response = await client.get<Chat[]>('/chats');
@@ -29,4 +29,8 @@ export const getMessages = async (chatId: number): Promise<Message[]> => {
 export const finishChat = async (chatId: number): Promise<Chat> => {
     const response = await client.post<Chat>(`/chats/${chatId}/finish`);
     return response.data;
+};
+
+export const retryMessage = async (chatId: number): Promise<void> => {
+    await client.post(`/chats/${chatId}/retry`);
 };
