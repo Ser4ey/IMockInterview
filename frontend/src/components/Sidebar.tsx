@@ -2,7 +2,6 @@ import React from 'react';
 import {
   Box,
   Divider,
-  LinearProgress,
   List,
   ListItem,
   ListItemButton,
@@ -13,6 +12,8 @@ import {
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PersonIcon from '@mui/icons-material/Person';
 import TipsAndUpdatesIcon from '@mui/icons-material/TipsAndUpdates';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import QuizIcon from '@mui/icons-material/Quiz';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -27,6 +28,12 @@ const Sidebar: React.FC = () => {
     { text: 'Панель подготовки', icon: <DashboardIcon />, path: '/dashboard' },
     { text: 'Профиль', icon: <PersonIcon />, path: '/profile' },
   ];
+  const adminItems = user?.is_superuser || user?.role === 'admin'
+    ? [
+        { text: 'Типы интервью', icon: <AdminPanelSettingsIcon />, path: '/admin/interview-types' },
+        { text: 'Банк вопросов', icon: <QuizIcon />, path: '/admin/questions' },
+      ]
+    : [];
 
   return (
     <Box
@@ -57,7 +64,7 @@ const Sidebar: React.FC = () => {
       </Box>
       <Box sx={{ overflow: 'auto', flexGrow: 1 }}>
         <List>
-          {menuItems.map((item) => (
+          {[...menuItems, ...adminItems].map((item) => (
             <ListItem key={item.text} disablePadding>
               <ListItemButton
                 selected={location.pathname === item.path}
@@ -84,36 +91,36 @@ const Sidebar: React.FC = () => {
       <Box
         sx={{
           m: 1,
-          p: 2,
-          borderRadius: 4,
+          p: 2.25,
+          borderRadius: 3.5,
           bgcolor: 'primary.main',
           color: 'primary.contrastText',
+          overflow: 'hidden',
         }}
       >
-        <TipsAndUpdatesIcon sx={{ mb: 1 }} />
-        <Typography variant="subtitle2" fontWeight={900}>
-          Фокус недели
-        </Typography>
-        <Typography variant="caption" sx={{ opacity: 0.8 }}>
+        <Box display="flex" alignItems="center" gap={1} sx={{ mb: 1 }}>
+          <Box
+            sx={{
+              width: 28,
+              minWidth: 28,
+              height: 28,
+              display: 'grid',
+              placeItems: 'center',
+              borderRadius: 2,
+              bgcolor: 'rgba(255,255,255,0.14)',
+            }}
+          >
+            <TipsAndUpdatesIcon fontSize="small" />
+          </Box>
+          <Typography variant="subtitle2" fontWeight={900}>
+            Фокус недели
+          </Typography>
+        </Box>
+        <Typography variant="caption" sx={{ opacity: 0.8, lineHeight: 1.55, display: 'block' }}>
           Структурируйте ответы по схеме: контекст, решение, компромиссы.
         </Typography>
       </Box>
       <Divider sx={{ my: 1 }} />
-      {user && (
-        <Box p={2}>
-          <Typography variant="subtitle2" gutterBottom>
-            Тариф: {(user.tariff || 'free').toUpperCase()}
-          </Typography>
-          <Typography variant="caption" display="block" gutterBottom>
-            Запросы: {user.requests_count || 0} / 20
-          </Typography>
-          <LinearProgress
-            variant="determinate"
-            value={Math.min((user.requests_count || 0) * (100 / 20), 100)}
-            color={(user.requests_count || 0) >= 20 ? 'error' : 'primary'}
-          />
-        </Box>
-      )}
     </Box>
   );
 };

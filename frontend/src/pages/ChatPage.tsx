@@ -30,19 +30,16 @@ import type { InterviewMessage, InterviewSession } from '../types/interview';
 
 const stageLabels: Record<string, string> = {
   intro: 'Вступление',
-  self_presentation: 'Самопрезентация',
-  technical: 'Технический блок',
-  practice: 'Практика',
-  soft_skills: 'Soft skills',
+  question: 'Вопрос из банка',
+  follow_up: 'Уточнение',
   feedback: 'Финальная реплика',
   finished: 'Завершено',
 };
 
-const typeLabels: Record<string, string> = {
-  full: 'Полное интервью',
-  theory: 'Теория',
-  self_presentation: 'Самопрезентация',
-  technical: 'Технический блок',
+const levelLabels: Record<string, string> = {
+  junior: 'Junior',
+  middle: 'Middle',
+  senior: 'Senior',
 };
 
 const ChatPage: React.FC = () => {
@@ -55,12 +52,15 @@ const ChatPage: React.FC = () => {
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   const interviewId = Number(id);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const container = messagesContainerRef.current;
+    if (container) {
+      container.scrollTop = container.scrollHeight;
+    }
   }, [messages]);
 
   useEffect(() => {
@@ -160,10 +160,8 @@ const ChatPage: React.FC = () => {
   const progressByStage: Record<string, number> = {
     created: 8,
     intro: 18,
-    self_presentation: 34,
-    technical: 56,
-    practice: 72,
-    soft_skills: 84,
+    question: 48,
+    follow_up: 68,
     feedback: 94,
     finished: 100,
   };
@@ -174,32 +172,34 @@ const ChatPage: React.FC = () => {
         sx={{
           p: { xs: 2.5, md: 3 },
           mb: 2.5,
-          borderRadius: 6,
+          borderRadius: { xs: 4, md: 5 },
           bgcolor: 'rgba(255,255,255,0.66)',
         }}
       >
         <Box display="flex" alignItems="center" justifyContent="space-between" gap={2} flexWrap="wrap">
           <Box display="flex" alignItems="center">
-          <IconButton aria-label="Вернуться к панели" onClick={() => navigate('/dashboard')} sx={{ mr: 1 }}>
-            <ArrowBackIcon />
-          </IconButton>
-          <Box>
-            <Typography variant="h4">{interview.specialization}</Typography>
-            <Box display="flex" gap={1} alignItems="center" flexWrap="wrap">
-              <Chip label={interview.level} size="small" variant="outlined" />
-              <Chip label={typeLabels[interview.interview_type]} size="small" variant="outlined" />
-              <Chip label={`Этап: ${stageLabels[interview.stage] || interview.stage}`} size="small" />
+            <IconButton aria-label="Вернуться к панели" onClick={() => navigate('/dashboard')} sx={{ mr: 1 }}>
+              <ArrowBackIcon />
+            </IconButton>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography variant="h4" sx={{ lineHeight: 1.15 }}>
+                {interview.interview_type_title}
+              </Typography>
+              <Box display="flex" gap={1} alignItems="center" flexWrap="wrap" sx={{ mt: 0.75 }}>
+                <Chip label={levelLabels[interview.level] || interview.level} size="small" variant="outlined" />
+                <Chip label={interview.role} size="small" variant="outlined" />
+                <Chip label={`Этап: ${stageLabels[interview.stage] || interview.stage}`} size="small" />
+              </Box>
             </Box>
           </Box>
-        </Box>
           <Box display="flex" alignItems="center" gap={1.5}>
-          {!isFinished && (
-            <Button variant="outlined" color="primary" onClick={handleFinish} disabled={sending}>
-              Завершить
-            </Button>
-          )}
-          <Chip label={isFinished ? 'Завершено' : 'Активно'} color={isFinished ? 'default' : 'success'} />
-        </Box>
+            {!isFinished && (
+              <Button variant="outlined" color="primary" onClick={handleFinish} disabled={sending}>
+                Завершить
+              </Button>
+            )}
+            <Chip label={isFinished ? 'Завершено' : 'Активно'} color={isFinished ? 'default' : 'success'} />
+          </Box>
         </Box>
         <Box sx={{ mt: 2 }}>
           <LinearProgress variant="determinate" value={progressByStage[interview.stage] ?? 20} />
@@ -209,14 +209,15 @@ const ChatPage: React.FC = () => {
       <Grid container spacing={2.5}>
         <Grid size={{ xs: 12, md: 8.5 }}>
           <Paper
+            ref={messagesContainerRef}
             sx={{
-              height: { xs: '64vh', md: '68vh' },
+              height: { xs: '56vh', md: 520 },
               p: { xs: 2, md: 2.5 },
               overflowY: 'auto',
               display: 'flex',
               flexDirection: 'column',
               gap: 2,
-              borderRadius: 6,
+              borderRadius: { xs: 4, md: 5 },
               bgcolor: 'rgba(255,255,255,0.66)',
             }}
           >
@@ -271,10 +272,9 @@ const ChatPage: React.FC = () => {
                 </Box>
               );
             })}
-            <div ref={messagesEndRef} />
           </Paper>
 
-          <Paper sx={{ mt: 2, p: 2, borderRadius: 5, bgcolor: 'rgba(255,255,255,0.72)' }}>
+          <Paper sx={{ mt: 2, p: 2, borderRadius: 4, bgcolor: 'rgba(255,255,255,0.72)' }}>
             <Box display="flex" gap={1.2}>
               <TextField
                 fullWidth
@@ -308,15 +308,15 @@ const ChatPage: React.FC = () => {
 
         <Grid size={{ xs: 12, md: 3.5 }}>
           <Stack spacing={2}>
-            <Paper sx={{ p: 3, borderRadius: 6, bgcolor: 'rgba(255,255,255,0.66)' }}>
+            <Paper sx={{ p: 3, borderRadius: { xs: 4, md: 5 }, bgcolor: 'rgba(255,255,255,0.66)' }}>
               <Typography variant="h6">Параметры</Typography>
               <Stack spacing={1.2} sx={{ mt: 2 }}>
-                <Chip label={`Роль: ${interview.specialization}`} />
-                <Chip label={`Уровень: ${interview.level}`} />
-                <Chip label={`Формат: ${typeLabels[interview.interview_type]}`} />
+                <Chip label={`Роль: ${interview.role}`} />
+                <Chip label={`Уровень: ${levelLabels[interview.level] || interview.level}`} />
+                <Chip label={`Стек: ${interview.technology_stack}`} />
               </Stack>
             </Paper>
-            <Paper sx={{ p: 3, borderRadius: 6, bgcolor: 'primary.main', color: 'primary.contrastText' }}>
+            <Paper sx={{ p: 3, borderRadius: { xs: 4, md: 5 }, bgcolor: 'primary.main', color: 'primary.contrastText' }}>
               <Typography variant="h6">Подсказка</Typography>
               <Typography sx={{ mt: 1.5, color: 'rgba(255,255,255,0.76)', lineHeight: 1.7 }}>
                 Отвечайте по структуре: тезис, объяснение, пример из опыта, компромисс или ограничение.

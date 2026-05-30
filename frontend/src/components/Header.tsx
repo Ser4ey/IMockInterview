@@ -29,6 +29,11 @@ const Header: React.FC = () => {
     navigate('/profile');
   };
 
+  const handleAdmin = () => {
+    handleClose();
+    navigate('/admin/interview-types');
+  };
+
   return (
     <AppBar
       position="sticky"
@@ -113,6 +118,7 @@ const Header: React.FC = () => {
             >
               <MenuItem disabled>{user?.email}</MenuItem>
               <MenuItem onClick={handleProfile}>Профиль</MenuItem>
+              {(user?.is_superuser || user?.role === 'admin') && <MenuItem onClick={handleAdmin}>Администрирование</MenuItem>}
               <MenuItem onClick={handleLogout}>Выйти</MenuItem>
             </Menu>
           </Box>

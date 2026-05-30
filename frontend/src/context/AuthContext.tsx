@@ -8,7 +8,7 @@ interface User {
   full_name?: string;
   is_active: boolean;
   is_superuser: boolean;
-  tariff: string;
+  role?: string;
   requests_count: number;
 }
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   Box,
@@ -21,38 +21,28 @@ import {
   Select,
   Snackbar,
   Stack,
-  TextField,
   Typography,
 } from '@mui/material';
-import {
-  Add as AddIcon,
-  AutoAwesome,
-  CheckCircle,
-  Insights,
-  QueryStats,
-  TrendingUp,
-} from '@mui/icons-material';
+import { Add as AddIcon, AutoAwesome, Insights, QueryStats, TrendingUp } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { createInterview, getInterviews } from '../api/interviews';
+import { getInterviewTypes } from '../api/interviewTypes';
 import { getApiErrorMessage } from '../api/errors';
 import { useAuth } from '../context/AuthContext';
-import { InterviewStatus, InterviewType } from '../types/interview';
-import type { CreateInterviewRequest, InterviewSession } from '../types/interview';
+import { InterviewStatus } from '../types/interview';
+import type { CreateInterviewRequest, InterviewSession, InterviewType } from '../types/interview';
 
-const typeLabels: Record<InterviewType, string> = {
-  full: 'Полное интервью',
-  theory: 'Теория',
-  self_presentation: 'Самопрезентация',
-  technical: 'Технический блок',
+const levelLabels: Record<string, string> = {
+  junior: 'Junior',
+  middle: 'Middle',
+  senior: 'Senior',
 };
 
 const stageLabels: Record<string, string> = {
   created: 'Подготовка',
   intro: 'Вступление',
-  self_presentation: 'Самопрезентация',
-  technical: 'Технический блок',
-  practice: 'Практика',
-  soft_skills: 'Soft skills',
+  question: 'Вопрос',
+  follow_up: 'Уточнение',
   feedback: 'Финал',
   finished: 'Завершено',
 };
@@ -61,37 +51,53 @@ const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [interviews, setInterviews] = useState<InterviewSession[]>([]);
+  const [interviewTypes, setInterviewTypes] = useState<InterviewType[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [creating, setCreating] = useState(false);
-  const [duration, setDuration] = useState('45 минут');
   const [newInterviewData, setNewInterviewData] = useState<CreateInterviewRequest>({
-    specialization: 'Python Backend',
-    level: 'Middle',
-    interview_type: InterviewType.FULL,
+    interview_type_id: 0,
+    level: 'junior',
   });
 
   useEffect(() => {
-    loadInterviews();
+    loadDashboard();
   }, []);
 
-  const loadInterviews = async () => {
+  useEffect(() => {
+    if (interviewTypes.length && !newInterviewData.interview_type_id) {
+      const firstType = interviewTypes[0];
+      setNewInterviewData({
+        interview_type_id: firstType.id,
+        level: firstType.levels[0] || 'junior',
+      });
+    }
+  }, [interviewTypes, newInterviewData.interview_type_id]);
+
+  const selectedType = useMemo(
+    () => interviewTypes.find((item) => item.id === newInterviewData.interview_type_id),
+    [interviewTypes, newInterviewData.interview_type_id],
+  );
+  const selectedQuestionCount = selectedType?.question_counts?.[newInterviewData.level] ?? 0;
+
+  const loadDashboard = async () => {
     setLoadError(null);
     try {
-      const data = await getInterviews();
-      setInterviews(data);
+      const [interviewData, typeData] = await Promise.all([getInterviews(), getInterviewTypes()]);
+      setInterviews(interviewData);
+      setInterviewTypes(typeData);
     } catch (error) {
-      console.error('Не удалось загрузить интервью', error);
-      setLoadError(getApiErrorMessage(error, 'Не удалось загрузить интервью'));
+      console.error('Не удалось загрузить панель', error);
+      setLoadError(getApiErrorMessage(error, 'Не удалось загрузить данные панели'));
     } finally {
       setLoading(false);
     }
   };
 
   const handleCreateInterview = async () => {
-    if (!newInterviewData.specialization.trim()) return;
+    if (!newInterviewData.interview_type_id || !selectedQuestionCount) return;
     setCreating(true);
     setActionError(null);
     try {
@@ -113,12 +119,7 @@ const Dashboard: React.FC = () => {
   const metrics = [
     { label: 'Готовность', value: `${readiness}%`, icon: <TrendingUp />, helper: 'по текущей активности' },
     { label: 'Интервью', value: interviews.length, icon: <QueryStats />, helper: `${finishedCount} завершено` },
-    {
-      label: 'Тариф',
-      value: (user?.tariff || 'free').toUpperCase(),
-      icon: <CheckCircle />,
-      helper: `${user?.requests_count ?? 0} запросов использовано`,
-    },
+    { label: 'Банк вопросов', value: interviewTypes.length, icon: <Insights />, helper: 'активных типов интервью' },
   ];
 
   return (
@@ -142,30 +143,30 @@ const Dashboard: React.FC = () => {
               sx={{ mb: 2, bgcolor: 'rgba(255,255,255,0.12)', color: 'inherit' }}
             />
             <Typography variant="h3" component="h1">
-              {user?.full_name || 'Кандидат'}, продолжим тренировать собеседования
+              {user?.full_name || 'Кандидат'}, выберите собеседование из банка IMock
             </Typography>
             <Typography sx={{ mt: 2, maxWidth: 760, color: 'rgba(239,246,239,0.76)', lineHeight: 1.7 }}>
-              Выберите сценарий, пройдите диалог с AI-интервьюером и получите разбор по критериям:
-              технические знания, полнота ответа, структура и коммуникация.
+              Вопросы заранее подготовлены и сохранены в базе. AI-интервьюер использует эталонный ответ,
+              критерии оценки и историю диалога, чтобы задавать уточнения и формировать итог.
             </Typography>
           </Grid>
           <Grid size={{ xs: 12, md: 4 }}>
             <Stack spacing={1.5}>
               <Button
                 variant="contained"
-                color="secondary"
                 size="large"
                 startIcon={<AddIcon />}
                 onClick={() => setOpenDialog(true)}
+                sx={{
+                  bgcolor: '#FBF8F1',
+                  color: 'primary.main',
+                  '&:hover': { bgcolor: '#F3E7D2' },
+                }}
               >
                 Новое mock-собеседование
               </Button>
-              <Button
-                variant="outlined"
-                sx={{ color: '#EFF6EF', borderColor: 'rgba(255,255,255,0.35)' }}
-                onClick={() => navigate('/profile')}
-              >
-                Открыть профиль
+              <Button variant="outlined" sx={{ color: '#EFF6EF', borderColor: 'rgba(255,255,255,0.35)' }} onClick={() => navigate('/profile')}>
+                Открыть прогресс
               </Button>
             </Stack>
           </Grid>
@@ -173,7 +174,7 @@ const Dashboard: React.FC = () => {
       </Paper>
 
       {loadError && (
-        <Alert severity="error" sx={{ mb: 3 }} action={<Button color="inherit" size="small" onClick={loadInterviews}>Повторить</Button>}>
+        <Alert severity="error" sx={{ mb: 3 }} action={<Button color="inherit" size="small" onClick={loadDashboard}>Повторить</Button>}>
           {loadError}
         </Alert>
       )}
@@ -192,17 +193,7 @@ const Dashboard: React.FC = () => {
                   </Typography>
                   <Typography color="text.secondary">{item.helper}</Typography>
                 </Box>
-                <Box
-                  sx={{
-                    display: 'grid',
-                    placeItems: 'center',
-                    width: 48,
-                    height: 48,
-                    borderRadius: 3,
-                    bgcolor: 'rgba(238,243,232,0.9)',
-                    color: 'primary.main',
-                  }}
-                >
+                <Box sx={{ display: 'grid', placeItems: 'center', width: 48, height: 48, borderRadius: 3, bgcolor: 'rgba(238,243,232,0.9)', color: 'primary.main' }}>
                   {item.icon}
                 </Box>
               </Box>
@@ -213,15 +204,12 @@ const Dashboard: React.FC = () => {
         <Grid size={{ xs: 12, md: 4 }}>
           <Paper sx={{ p: 3, height: '100%', borderRadius: 5, bgcolor: 'rgba(255,255,255,0.64)' }}>
             <Typography variant="h5" gutterBottom>
-              Следующий фокус
-            </Typography>
-            <Typography color="text.secondary" sx={{ lineHeight: 1.7 }}>
-              Тренируйте ответы с четкой структурой: короткий контекст, решение, ограничения и компромиссы.
+              Доступные направления
             </Typography>
             <Stack direction="row" flexWrap="wrap" gap={1} sx={{ mt: 2 }}>
-              <Chip label="REST API" />
-              <Chip label="Пагинация" />
-              <Chip label="Архитектура" />
+              {interviewTypes.map((item) => (
+                <Chip key={item.id} label={item.title} />
+              ))}
             </Stack>
           </Paper>
         </Grid>
@@ -257,32 +245,21 @@ const Dashboard: React.FC = () => {
                   <ListItemButton
                     key={interview.id}
                     onClick={() => navigate(`/interviews/${interview.id}`)}
-                    sx={{
-                      mb: 1.2,
-                      border: '1px solid rgba(21, 57, 38, 0.1)',
-                      borderRadius: 4,
-                      bgcolor: 'rgba(255,255,255,0.56)',
-                    }}
+                    sx={{ mb: 1.2, border: '1px solid rgba(21, 57, 38, 0.1)', borderRadius: 4, bgcolor: 'rgba(255,255,255,0.56)' }}
                   >
                     <ListItemText
                       primary={
                         <Box display="flex" alignItems="center" gap={1} flexWrap="wrap">
                           <Typography variant="subtitle1" component="span" fontWeight={900}>
-                            {interview.specialization}
+                            {interview.interview_type_title}
                           </Typography>
-                          <Chip label={interview.level} size="small" variant="outlined" />
-                          <Chip label={typeLabels[interview.interview_type]} size="small" variant="outlined" />
+                          <Chip label={levelLabels[interview.level] || interview.level} size="small" variant="outlined" />
+                          <Chip label={interview.role} size="small" variant="outlined" />
                         </Box>
                       }
-                      secondary={`Этап: ${stageLabels[interview.stage] || interview.stage}. Создано: ${new Date(
-                        interview.started_at,
-                      ).toLocaleDateString('ru-RU')}`}
+                      secondary={`Этап: ${stageLabels[interview.stage] || interview.stage}. Создано: ${new Date(interview.started_at).toLocaleDateString('ru-RU')}`}
                     />
-                    <Chip
-                      label={interview.status === InterviewStatus.ACTIVE ? 'Активно' : 'Завершено'}
-                      color={interview.status === InterviewStatus.ACTIVE ? 'success' : 'default'}
-                      size="small"
-                    />
+                    <Chip label={interview.status === InterviewStatus.ACTIVE ? 'Активно' : 'Завершено'} color={interview.status === InterviewStatus.ACTIVE ? 'success' : 'default'} size="small" />
                   </ListItemButton>
                 ))}
               </List>
@@ -295,22 +272,31 @@ const Dashboard: React.FC = () => {
         <DialogTitle component="div" sx={{ pb: 0 }}>
           <Typography variant="h4">Настройка интервью</Typography>
           <Typography color="text.secondary" sx={{ mt: 1 }}>
-            Соберите сценарий тренировки перед запуском.
+            Выберите направление и уровень. Вопросы будут взяты из банка IMock.
           </Typography>
         </DialogTitle>
         <DialogContent>
           <Box component="form" sx={{ mt: 1 }}>
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              label="Специализация"
-              helperText="Например: Python Backend, Frontend React, ML Engineer"
-              value={newInterviewData.specialization}
-              onChange={(event) =>
-                setNewInterviewData({ ...newInterviewData, specialization: event.target.value })
-              }
-            />
+            <FormControl fullWidth margin="normal">
+              <InputLabel>Тип собеседования</InputLabel>
+              <Select
+                value={newInterviewData.interview_type_id || ''}
+                label="Тип собеседования"
+                onChange={(event) => {
+                  const nextType = interviewTypes.find((item) => item.id === Number(event.target.value));
+                  setNewInterviewData({
+                    interview_type_id: Number(event.target.value),
+                    level: nextType?.levels[0] || 'junior',
+                  });
+                }}
+              >
+                {interviewTypes.map((item) => (
+                  <MenuItem value={item.id} key={item.id}>
+                    {item.title}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
             <FormControl fullWidth margin="normal">
               <InputLabel>Уровень</InputLabel>
               <Select
@@ -318,53 +304,32 @@ const Dashboard: React.FC = () => {
                 label="Уровень"
                 onChange={(event) => setNewInterviewData({ ...newInterviewData, level: event.target.value })}
               >
-                <MenuItem value="Junior">Junior</MenuItem>
-                <MenuItem value="Middle">Middle</MenuItem>
-                <MenuItem value="Senior">Senior</MenuItem>
+                {(selectedType?.levels || []).map((level) => (
+                  <MenuItem value={level} key={level}>
+                    {levelLabels[level] || level}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
-            <FormControl fullWidth margin="normal">
-              <InputLabel>Сценарий</InputLabel>
-              <Select
-                value={newInterviewData.interview_type}
-                label="Сценарий"
-                onChange={(event) =>
-                  setNewInterviewData({
-                    ...newInterviewData,
-                    interview_type: event.target.value as InterviewType,
-                  })
-                }
-              >
-                <MenuItem value={InterviewType.FULL}>Полное интервью</MenuItem>
-                <MenuItem value={InterviewType.THEORY}>Теория</MenuItem>
-                <MenuItem value={InterviewType.SELF_PRESENTATION}>Самопрезентация</MenuItem>
-                <MenuItem value={InterviewType.TECHNICAL}>Технический блок</MenuItem>
-              </Select>
-            </FormControl>
-            <FormControl fullWidth margin="normal">
-              <InputLabel>Длительность</InputLabel>
-              <Select value={duration} label="Длительность" onChange={(event) => setDuration(event.target.value)}>
-                <MenuItem value="30 минут">30 минут</MenuItem>
-                <MenuItem value="45 минут">45 минут</MenuItem>
-                <MenuItem value="60 минут">60 минут</MenuItem>
-              </Select>
-            </FormControl>
-            <Paper variant="outlined" sx={{ mt: 2, p: 2, borderRadius: 4, bgcolor: 'rgba(238,243,232,0.7)' }}>
-              <Typography variant="subtitle2">Резюме параметров</Typography>
-              <Typography color="text.secondary">
-                {newInterviewData.specialization || 'Backend-разработка / Python'} · {newInterviewData.level} ·{' '}
-                {typeLabels[newInterviewData.interview_type]} · {duration}
-              </Typography>
-            </Paper>
+            {selectedType && (
+              <Paper variant="outlined" sx={{ mt: 2, p: 2, borderRadius: 4, bgcolor: 'rgba(238,243,232,0.7)' }}>
+                <Typography variant="subtitle2">{selectedType.role}</Typography>
+                <Typography color="text.secondary">{selectedType.technology_stack}</Typography>
+                <Typography color="text.secondary" sx={{ mt: 1 }}>
+                  Активных вопросов для уровня: {selectedQuestionCount}
+                </Typography>
+                {!selectedQuestionCount && (
+                  <Alert severity="warning" sx={{ mt: 2 }}>
+                    Для выбранного уровня пока нет активных вопросов. Администратор должен заполнить банк вопросов.
+                  </Alert>
+                )}
+              </Paper>
+            )}
           </Box>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3 }}>
           <Button onClick={() => setOpenDialog(false)}>Отмена</Button>
-          <Button
-            onClick={handleCreateInterview}
-            variant="contained"
-            disabled={!newInterviewData.specialization.trim() || creating}
-          >
+          <Button onClick={handleCreateInterview} variant="contained" disabled={!newInterviewData.interview_type_id || !selectedQuestionCount || creating}>
             {creating ? 'Создаю...' : 'Начать интервью'}
           </Button>
         </DialogActions>
