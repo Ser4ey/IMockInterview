@@ -172,7 +172,7 @@ const ChatPage: React.FC = () => {
         sx={{
           p: { xs: 2.5, md: 3 },
           mb: 2.5,
-          borderRadius: { xs: 4, md: 5 },
+          borderRadius: '20px',
           bgcolor: 'rgba(255,255,255,0.66)',
         }}
       >
@@ -211,13 +211,13 @@ const ChatPage: React.FC = () => {
           <Paper
             ref={messagesContainerRef}
             sx={{
-              height: { xs: '56vh', md: 520 },
+              height: { xs: '54vh', md: 500 },
               p: { xs: 2, md: 2.5 },
               overflowY: 'auto',
               display: 'flex',
               flexDirection: 'column',
               gap: 2,
-              borderRadius: { xs: 4, md: 5 },
+              borderRadius: '20px',
               bgcolor: 'rgba(255,255,255,0.66)',
             }}
           >
@@ -253,7 +253,7 @@ const ChatPage: React.FC = () => {
                       maxWidth: { xs: '84%', md: '72%' },
                       bgcolor: isUser ? 'primary.main' : '#FFFFFF',
                       color: isUser ? 'primary.contrastText' : 'text.primary',
-                      borderRadius: isUser ? '22px 22px 8px 22px' : '22px 22px 22px 8px',
+                      borderRadius: isUser ? '18px 18px 8px 18px' : '18px 18px 18px 8px',
                       boxShadow: '0 12px 34px rgba(15,23,42,0.07)',
                     }}
                   >
@@ -274,7 +274,7 @@ const ChatPage: React.FC = () => {
             })}
           </Paper>
 
-          <Paper sx={{ mt: 2, p: 2, borderRadius: 4, bgcolor: 'rgba(255,255,255,0.72)' }}>
+          <Paper sx={{ mt: 2, p: 2, borderRadius: '18px', bgcolor: 'rgba(255,255,255,0.72)' }}>
             <Box display="flex" gap={1.2}>
               <TextField
                 fullWidth
@@ -295,6 +295,7 @@ const ChatPage: React.FC = () => {
                   alignSelf: 'flex-end',
                   width: 52,
                   height: 52,
+                  borderRadius: '14px',
                   bgcolor: 'primary.main',
                   color: 'primary.contrastText',
                   '&:hover': { bgcolor: 'primary.dark' },
@@ -308,15 +309,26 @@ const ChatPage: React.FC = () => {
 
         <Grid size={{ xs: 12, md: 3.5 }}>
           <Stack spacing={2}>
-            <Paper sx={{ p: 3, borderRadius: { xs: 4, md: 5 }, bgcolor: 'rgba(255,255,255,0.66)' }}>
+            <Paper sx={{ p: 3, borderRadius: '20px', bgcolor: 'rgba(255,255,255,0.66)' }}>
               <Typography variant="h6">Параметры</Typography>
               <Stack spacing={1.2} sx={{ mt: 2 }}>
-                <Chip label={`Роль: ${interview.role}`} />
-                <Chip label={`Уровень: ${levelLabels[interview.level] || interview.level}`} />
-                <Chip label={`Стек: ${interview.technology_stack}`} />
+                {[
+                  ['Роль', interview.role],
+                  ['Уровень', levelLabels[interview.level] || interview.level],
+                  ['Стек', interview.technology_stack],
+                ].map(([label, value]) => (
+                  <Box key={label} sx={{ px: 1.5, py: 1.1, borderRadius: '12px', bgcolor: 'rgba(238,243,232,0.72)' }}>
+                    <Typography variant="caption" color="text.secondary" fontWeight={900}>
+                      {label}
+                    </Typography>
+                    <Typography variant="body2" fontWeight={800} sx={{ mt: 0.25, overflowWrap: 'anywhere' }}>
+                      {value}
+                    </Typography>
+                  </Box>
+                ))}
               </Stack>
             </Paper>
-            <Paper sx={{ p: 3, borderRadius: { xs: 4, md: 5 }, bgcolor: 'primary.main', color: 'primary.contrastText' }}>
+            <Paper sx={{ p: 3.25, borderRadius: '20px', bgcolor: 'primary.main', color: 'primary.contrastText' }}>
               <Typography variant="h6">Подсказка</Typography>
               <Typography sx={{ mt: 1.5, color: 'rgba(255,255,255,0.76)', lineHeight: 1.7 }}>
                 Отвечайте по структуре: тезис, объяснение, пример из опыта, компромисс или ограничение.

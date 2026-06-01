@@ -9,7 +9,11 @@ import ChatPage from './pages/ChatPage';
 import InterviewResult from './pages/InterviewResult';
 import ProfilePage from './pages/ProfilePage';
 import ProtectedRoute from './components/ProtectedRoute';
+import AdminRoute from './components/AdminRoute';
 import ErrorBoundary from './components/ErrorBoundary';
+import AdminInterviewTypes from './pages/admin/AdminInterviewTypes';
+import AdminQuestions from './pages/admin/AdminQuestions';
+import AdminGenerationJobs from './pages/admin/AdminGenerationJobs';
 
 function App() {
   return (
@@ -28,8 +32,11 @@ function App() {
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/interviews/:id" element={<ChatPage />} />
                 <Route path="/interviews/:id/result" element={<InterviewResult />} />
-                <Route path="/chats/:id" element={<ChatPage />} />
-                <Route path="/chats/:id/result" element={<InterviewResult />} />
+                <Route element={<AdminRoute />}>
+                  <Route path="/admin/interview-types" element={<AdminInterviewTypes />} />
+                  <Route path="/admin/questions" element={<AdminQuestions />} />
+                  <Route path="/admin/question-generation-jobs" element={<AdminGenerationJobs />} />
+                </Route>
                 {/* Redirect legacy or unknown routes to dashboard if logged in, else landing */}
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Route>

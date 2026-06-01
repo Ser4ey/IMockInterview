@@ -126,9 +126,9 @@ const Dashboard: React.FC = () => {
     <Container maxWidth="xl" sx={{ px: { xs: 0, md: 1 }, mb: 4 }}>
       <Paper
         sx={{
-          p: { xs: 3, md: 4 },
+          p: { xs: 3, md: 4.5 },
           mb: 3,
-          borderRadius: 7,
+          borderRadius: { xs: '24px', md: '28px' },
           color: '#EFF6EF',
           bgcolor: 'primary.main',
           background:
@@ -182,7 +182,7 @@ const Dashboard: React.FC = () => {
       <Grid container spacing={3}>
         {metrics.map((item) => (
           <Grid size={{ xs: 12, md: 4 }} key={item.label}>
-            <Paper sx={{ p: 3, height: '100%', borderRadius: 5, bgcolor: 'rgba(255,255,255,0.64)' }}>
+            <Paper sx={{ p: 3, height: '100%', borderRadius: '16px', bgcolor: 'rgba(255,255,255,0.64)' }}>
               <Box display="flex" justifyContent="space-between" alignItems="flex-start" gap={2}>
                 <Box>
                   <Typography variant="overline" color="text.secondary" fontWeight={900}>
@@ -193,7 +193,7 @@ const Dashboard: React.FC = () => {
                   </Typography>
                   <Typography color="text.secondary">{item.helper}</Typography>
                 </Box>
-                <Box sx={{ display: 'grid', placeItems: 'center', width: 48, height: 48, borderRadius: 3, bgcolor: 'rgba(238,243,232,0.9)', color: 'primary.main' }}>
+                <Box sx={{ display: 'grid', placeItems: 'center', width: 48, height: 48, borderRadius: '12px', bgcolor: 'rgba(238,243,232,0.9)', color: 'primary.main' }}>
                   {item.icon}
                 </Box>
               </Box>
@@ -202,20 +202,22 @@ const Dashboard: React.FC = () => {
         ))}
 
         <Grid size={{ xs: 12, md: 4 }}>
-          <Paper sx={{ p: 3, height: '100%', borderRadius: 5, bgcolor: 'rgba(255,255,255,0.64)' }}>
+          <Paper sx={{ p: 3, height: '100%', borderRadius: '20px', bgcolor: 'rgba(255,255,255,0.64)' }}>
             <Typography variant="h5" gutterBottom>
               Доступные направления
             </Typography>
-            <Stack direction="row" flexWrap="wrap" gap={1} sx={{ mt: 2 }}>
+            <Stack spacing={1} sx={{ mt: 2 }}>
               {interviewTypes.map((item) => (
-                <Chip key={item.id} label={item.title} />
+                <Paper key={item.id} variant="outlined" sx={{ px: 1.6, py: 1.1, borderRadius: '12px', bgcolor: 'rgba(251,248,241,0.74)' }}>
+                  <Typography variant="subtitle2">{item.title}</Typography>
+                </Paper>
               ))}
             </Stack>
           </Paper>
         </Grid>
 
         <Grid size={{ xs: 12, md: 8 }}>
-          <Paper sx={{ p: { xs: 2.5, md: 3 }, height: '100%', borderRadius: 5, bgcolor: 'rgba(255,255,255,0.64)' }}>
+          <Paper sx={{ p: { xs: 2.5, md: 3 }, height: '100%', borderRadius: '20px', bgcolor: 'rgba(255,255,255,0.64)' }}>
             <Box display="flex" justifyContent="space-between" alignItems="center" gap={2} mb={2}>
               <Box>
                 <Typography variant="h5">История интервью</Typography>
@@ -244,8 +246,8 @@ const Dashboard: React.FC = () => {
                 {interviews.map((interview) => (
                   <ListItemButton
                     key={interview.id}
-                    onClick={() => navigate(`/interviews/${interview.id}`)}
-                    sx={{ mb: 1.2, border: '1px solid rgba(21, 57, 38, 0.1)', borderRadius: 4, bgcolor: 'rgba(255,255,255,0.56)' }}
+                    onClick={() => navigate(interview.status === InterviewStatus.FINISHED ? `/interviews/${interview.id}/result` : `/interviews/${interview.id}`)}
+                    sx={{ mb: 1.2, border: '1px solid rgba(21, 57, 38, 0.1)', borderRadius: '12px', bgcolor: 'rgba(255,255,255,0.56)', alignItems: 'flex-start', gap: 1.5 }}
                   >
                     <ListItemText
                       primary={
@@ -259,7 +261,7 @@ const Dashboard: React.FC = () => {
                       }
                       secondary={`Этап: ${stageLabels[interview.stage] || interview.stage}. Создано: ${new Date(interview.started_at).toLocaleDateString('ru-RU')}`}
                     />
-                    <Chip label={interview.status === InterviewStatus.ACTIVE ? 'Активно' : 'Завершено'} color={interview.status === InterviewStatus.ACTIVE ? 'success' : 'default'} size="small" />
+                    <Chip label={interview.status === InterviewStatus.ACTIVE ? 'Активно' : 'Завершено'} color={interview.status === InterviewStatus.ACTIVE ? 'success' : 'default'} size="small" sx={{ flexShrink: 0, mt: 0.5 }} />
                   </ListItemButton>
                 ))}
               </List>
@@ -312,7 +314,7 @@ const Dashboard: React.FC = () => {
               </Select>
             </FormControl>
             {selectedType && (
-              <Paper variant="outlined" sx={{ mt: 2, p: 2, borderRadius: 4, bgcolor: 'rgba(238,243,232,0.7)' }}>
+              <Paper variant="outlined" sx={{ mt: 2, p: 2, borderRadius: '16px', bgcolor: 'rgba(238,243,232,0.7)' }}>
                 <Typography variant="subtitle2">{selectedType.role}</Typography>
                 <Typography color="text.secondary">{selectedType.technology_stack}</Typography>
                 <Typography color="text.secondary" sx={{ mt: 1 }}>

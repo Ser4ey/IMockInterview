@@ -27,10 +27,16 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     
-    # Yandex Cloud
+    # LLM / Yandex AI Studio Agents
     LLM_MODE: str = "mock"
     YANDEX_FOLDER_ID: str = ""
     YANDEX_API_KEY: str = ""
+    YANDEX_AI_STUDIO_BASE_URL: str = "https://ai.api.cloud.yandex.net/v1"
+    YANDEX_QUESTION_AGENT_MODEL: str = ""
+    YANDEX_INTERVIEW_AGENT_MODEL: str = ""
+    YANDEX_REVIEW_AGENT_MODEL: str = ""
+    YANDEX_AGENTS_TIMEOUT_SECONDS: float = 60.0
+    YANDEX_AGENT_STORE_RESPONSES: bool = False
 
     model_config = SettingsConfigDict(case_sensitive=True, env_file=".env")
 

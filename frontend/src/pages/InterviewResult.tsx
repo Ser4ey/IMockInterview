@@ -20,7 +20,7 @@ const headerIconSx = {
   height: 30,
   display: 'grid',
   placeItems: 'center',
-  borderRadius: 2,
+  borderRadius: '10px',
   bgcolor: 'rgba(238,243,232,0.9)',
   color: 'primary.main',
 };
@@ -94,7 +94,7 @@ const InterviewResult: React.FC = () => {
           <Paper
             sx={{
               p: { xs: 3, md: 4.25 },
-              borderRadius: { xs: 5, md: 6 },
+              borderRadius: { xs: '24px', md: '28px' },
               height: '100%',
               color: '#EFF6EF',
               bgcolor: 'primary.main',
@@ -110,7 +110,7 @@ const InterviewResult: React.FC = () => {
                   height: 30,
                   display: 'grid',
                   placeItems: 'center',
-                  borderRadius: 2,
+                  borderRadius: '10px',
                   bgcolor: 'rgba(255,255,255,0.12)',
                 }}
               >
@@ -142,7 +142,7 @@ const InterviewResult: React.FC = () => {
         </Grid>
 
         <Grid size={{ xs: 12, md: 8 }}>
-          <Paper sx={{ p: { xs: 3, md: 4.5 }, borderRadius: { xs: 4, md: 5 }, bgcolor: 'rgba(255,255,255,0.66)' }}>
+          <Paper sx={{ p: { xs: 3, md: 4.5 }, borderRadius: '20px', bgcolor: 'rgba(255,255,255,0.66)' }}>
             <Typography variant="h4" sx={{ lineHeight: 1.15 }}>
               Разбор по критериям
             </Typography>
@@ -153,7 +153,7 @@ const InterviewResult: React.FC = () => {
             <Grid container spacing={2} sx={{ mt: 2 }}>
               {criteriaLabels.map(([key, label]) => (
                 <Grid size={{ xs: 12, sm: 6 }} key={key}>
-                  <Paper variant="outlined" sx={{ p: { xs: 2.25, md: 2.5 }, borderRadius: 4, bgcolor: 'rgba(251,248,241,0.76)' }}>
+                  <Paper variant="outlined" sx={{ p: { xs: 2.25, md: 2.5 }, borderRadius: '14px', bgcolor: 'rgba(251,248,241,0.76)' }}>
                     <Box display="flex" justifyContent="space-between" alignItems="center" gap={2} sx={{ minWidth: 0 }}>
                       <Typography variant="subtitle2" sx={{ minWidth: 0 }}>
                         {label}
@@ -169,7 +169,7 @@ const InterviewResult: React.FC = () => {
         </Grid>
 
         <Grid size={{ xs: 12, md: 6 }}>
-          <Paper sx={{ p: { xs: 3, md: 3.5 }, borderRadius: { xs: 4, md: 5 }, bgcolor: 'rgba(255,255,255,0.66)', height: '100%' }}>
+          <Paper sx={{ p: { xs: 3, md: 3.5 }, borderRadius: '20px', bgcolor: 'rgba(255,255,255,0.66)', height: '100%' }}>
             <Box display="flex" alignItems="center" gap={1.5} mb={2}>
               <Box sx={headerIconSx}>
                 <Psychology fontSize="small" />
@@ -178,7 +178,7 @@ const InterviewResult: React.FC = () => {
             </Box>
             <Stack spacing={1.2}>
               {result.strengths.map((item) => (
-                <Paper key={item} variant="outlined" sx={{ p: 2.25, borderRadius: 3, bgcolor: 'rgba(238,243,232,0.7)', lineHeight: 1.65 }}>
+                <Paper key={item} variant="outlined" sx={{ p: 2.25, borderRadius: '14px', bgcolor: 'rgba(238,243,232,0.7)', lineHeight: 1.65 }}>
                   {item}
                 </Paper>
               ))}
@@ -187,7 +187,7 @@ const InterviewResult: React.FC = () => {
         </Grid>
 
         <Grid size={{ xs: 12, md: 6 }}>
-          <Paper sx={{ p: { xs: 3, md: 3.5 }, borderRadius: { xs: 4, md: 5 }, bgcolor: 'rgba(255,255,255,0.66)', height: '100%' }}>
+          <Paper sx={{ p: { xs: 3, md: 3.5 }, borderRadius: '20px', bgcolor: 'rgba(255,255,255,0.66)', height: '100%' }}>
             <Box display="flex" alignItems="center" gap={1.5} mb={2}>
               <Box sx={headerIconSx}>
                 <TipsAndUpdates fontSize="small" />
@@ -196,7 +196,7 @@ const InterviewResult: React.FC = () => {
             </Box>
             <Stack spacing={1.2} sx={{ mb: 2 }}>
               {result.weaknesses.map((item) => (
-                <Paper key={item} variant="outlined" sx={{ p: 2.25, borderRadius: 3, bgcolor: 'rgba(251,248,241,0.76)', lineHeight: 1.65 }}>
+                <Paper key={item} variant="outlined" sx={{ p: 2.25, borderRadius: '14px', bgcolor: 'rgba(251,248,241,0.76)', lineHeight: 1.65 }}>
                   {item}
                 </Paper>
               ))}

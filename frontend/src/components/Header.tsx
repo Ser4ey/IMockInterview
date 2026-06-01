@@ -45,7 +45,7 @@ const Header: React.FC = () => {
         mx: 'auto',
         mt: 2,
         border: '1px solid rgba(255,255,255,0.72)',
-        borderRadius: 999,
+        borderRadius: '24px',
         color: 'text.primary',
         bgcolor: alpha('#FFFFFF', 0.72),
         backdropFilter: 'blur(18px)',
@@ -69,7 +69,7 @@ const Header: React.FC = () => {
             sx={{
               width: 38,
               height: 38,
-              borderRadius: 3,
+              borderRadius: '12px',
               bgcolor: 'primary.main',
               fontWeight: 900,
             }}
@@ -77,7 +77,7 @@ const Header: React.FC = () => {
             I
           </Avatar>
           <Box>
-            <Typography variant="h6" component="div" sx={{ lineHeight: 1, fontWeight: 900, letterSpacing: '-0.04em' }}>
+            <Typography variant="h6" component="div" sx={{ lineHeight: 1, fontWeight: 900, letterSpacing: 0 }}>
               IMock
             </Typography>
             <Typography variant="caption" color="text.secondary" sx={{ display: { xs: 'none', sm: 'block' } }}>
