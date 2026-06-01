@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.interview import TariffLimit
+from app.models.interview import UsageLimit
 from app.models.user import User
 
 
@@ -30,7 +30,7 @@ class LimitService:
         limit = await self._get_or_create_limit(db, user)
         self._reset_if_needed(limit)
         if limit.used_today >= limit.daily_limit:
-            raise LimitExceededError("Дневной лимит сообщений интервью исчерпан")
+            raise LimitExceededError("Временный лимит запросов к ИИ-сервису исчерпан. Попробуйте позже.")
 
         limit.used_today += 1
         user.requests_count = (user.requests_count or 0) + 1
@@ -38,15 +38,15 @@ class LimitService:
         db.add(user)
         return self._to_status(limit)
 
-    async def _get_or_create_limit(self, db: AsyncSession, user: User) -> TariffLimit:
-        result = await db.execute(select(TariffLimit).where(TariffLimit.user_id == user.id))
+    async def _get_or_create_limit(self, db: AsyncSession, user: User) -> UsageLimit:
+        result = await db.execute(select(UsageLimit).where(UsageLimit.user_id == user.id))
         limit = result.scalars().first()
         if limit:
             return limit
 
-        limit = TariffLimit(
+        limit = UsageLimit(
             user_id=user.id,
-            daily_limit=self._default_limit_for_user(user),
+            daily_limit=self._default_daily_limit(),
             used_today=0,
             reset_at=self._next_reset_at(),
         )
@@ -54,12 +54,10 @@ class LimitService:
         await db.flush()
         return limit
 
-    def _default_limit_for_user(self, user: User) -> int:
-        if user.tariff == "pro":
-            return 100
+    def _default_daily_limit(self) -> int:
         return 20
 
-    def _reset_if_needed(self, limit: TariffLimit) -> None:
+    def _reset_if_needed(self, limit: UsageLimit) -> None:
         now = datetime.now(timezone.utc)
         reset_at = self._as_aware_datetime(limit.reset_at) if limit.reset_at else None
         if reset_at is None:
@@ -70,7 +68,7 @@ class LimitService:
             limit.used_today = 0
             limit.reset_at = self._next_reset_at(now)
 
-    def _to_status(self, limit: TariffLimit) -> LimitStatus:
+    def _to_status(self, limit: UsageLimit) -> LimitStatus:
         reset_at = self._as_aware_datetime(limit.reset_at) if limit.reset_at else self._next_reset_at()
         remaining = max(limit.daily_limit - limit.used_today, 0)
         return LimitStatus(

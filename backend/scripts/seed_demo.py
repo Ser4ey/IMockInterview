@@ -17,7 +17,9 @@ async def main() -> None:
         result = await seed_demo_data(db)
     print(
         "Demo data is ready: "
-        f"email={result['email']}, password={result['password']}, interview_id={result['interview_id']}"
+        f"admin={result['admin_email']} / {result['admin_password']}, "
+        f"user={result['user_email']} / {result['user_password']}, "
+        f"interview_id={result['interview_id']}"
     )
 
 

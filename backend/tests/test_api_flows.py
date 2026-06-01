@@ -54,7 +54,7 @@ class ApiFlowTest(ApiTestCase):
         self.assertEqual(generation_response.json()["generated_count"], 2)
         self.assertEqual(generation_response.json()["skipped_count"], 0)
         self.assertEqual(generation_response.json()["provider"], "mock")
-        self.assertTrue(generation_response.json()["context_used"])
+        self.assertFalse(generation_response.json()["context_used"])
 
         questions_response = self.client.get(
             f"/api/v1/admin/questions?interview_type_id={interview_type_id}&level=junior",

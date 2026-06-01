@@ -2,10 +2,15 @@ import asyncio
 
 from sqlalchemy import func, select
 
+from app.core.config import settings
 from app.models.interview import InterviewType, Question
 from app.services.demo_seed import seed_demo_data
-from app.services.external_context import MockExternalContextProvider
-from app.services.llm_client import MockLLMClient, YandexLLMClient
+from app.services.llm_client import (
+    LLMInterviewerReply,
+    MockLLMClient,
+    YandexAIStudioAgentsClient,
+    get_llm_client,
+)
 from app.services.prompt_builder import PromptBuilder
 from tests.utils import ApiTestCase
 
@@ -39,30 +44,80 @@ class LLMAndSeedTest(ApiTestCase):
         self.assertIn("JSON", messages[0]["text"])
         self.assertIn("Frontend React-разработчик", messages[1]["text"])
 
-    def test_mock_external_context_returns_sources_for_question_generation(self):
-        interview_type = InterviewType(
-            title="Backend Java-разработчик",
-            role="Backend Java-разработчик",
-            technology_stack="Java, Spring",
-            description="",
+    def test_llm_mode_supports_only_mock_and_yandex_agents(self):
+        old_mode = settings.LLM_MODE
+        try:
+            settings.LLM_MODE = "mock"
+            self.assertIsInstance(get_llm_client(), MockLLMClient)
+            settings.LLM_MODE = "yandex_agents"
+            self.assertIsInstance(get_llm_client(), YandexAIStudioAgentsClient)
+            settings.LLM_MODE = "yandex"
+            with self.assertRaises(RuntimeError):
+                get_llm_client()
+        finally:
+            settings.LLM_MODE = old_mode
+
+    def test_yandex_agents_parser_accepts_structured_payloads(self):
+        client = YandexAIStudioAgentsClient()
+        questions = client._parse_question_bank(
+            {
+                "output_text": """
+                {
+                  "questions": [
+                    {
+                      "question_text": "Explain REST API design for backend services",
+                      "level": "junior",
+                      "tags": ["REST", "Backend"],
+                      "expected_answer": "Candidate should explain resources, HTTP methods, statuses and stateless communication.",
+                      "evaluation_criteria": ["resources and methods", "status codes and statelessness"],
+                      "source_title": "AI Studio Web Search",
+                      "source_url": null
+                    }
+                  ]
+                }
+                """
+            }
         )
+        self.assertEqual(len(questions.questions), 1)
+        reply = client._parse_interviewer_reply(
+            {
+                "output": [
+                    {
+                        "content": [
+                            {
+                                "text": '{"message":"Уточните пример.","should_ask_follow_up":true,"covered_criteria":[],"missing_criteria":["пример"]}'
+                            }
+                        ]
+                    }
+                ]
+            }
+        )
+        self.assertIsInstance(reply, LLMInterviewerReply)
+        self.assertTrue(reply.should_ask_follow_up)
+        evaluation = client._parse_evaluation(
+            '{"score":80,"correctness":80,"completeness":75,"depth":70,"communication":85,"strengths":["структура"],"weaknesses":["мало примеров"],"recommendations":"Добавить примеры.","summary":"Хорошо."}'
+        )
+        self.assertEqual(evaluation.score, 80)
 
-        async def run():
-            return await MockExternalContextProvider().collect(interview_type, "junior", 2)
-
-        sources = asyncio.run(run())
-        self.assertEqual(len(sources), 1)
-        self.assertIn("Java", sources[0].snippet)
-        self.assertEqual(sources[0].source_type, "mock_context")
-
-    def test_yandex_parser_rejects_invalid_json(self):
-        client = YandexLLMClient()
+    def test_yandex_agents_parser_rejects_invalid_json(self):
+        client = YandexAIStudioAgentsClient()
         with self.assertRaises(ValueError):
             client._parse_evaluation("not-json")
         with self.assertRaises(ValueError):
-            client._parse_generated_questions('{"question_text": "not an array"}')
+            client._parse_question_bank('{"question_text": "not an array"}')
         with self.assertRaises(ValueError):
-            client._parse_generated_questions('[{"question_text": "short"}]')
+            client._parse_question_bank('{"questions":[{"question_text":"short"}]}')
+        with self.assertRaises(ValueError):
+            client._parse_interviewer_reply(
+                '{"message":"ok","should_ask_follow_up":false,"covered_criteria":[],"missing_criteria":[],"extra":"nope"}'
+            )
+
+    def test_yandex_agents_rejects_non_completed_response_status(self):
+        client = YandexAIStudioAgentsClient()
+        with self.assertRaises(RuntimeError):
+            client._ensure_completed_response({"status": "failed", "error": {"message": "bad key"}})
+        with self.assertRaises(RuntimeError):
+            client._ensure_completed_response({"status": "incomplete", "incomplete_details": {"reason": "max_output_tokens"}})
 
     def test_seed_is_idempotent_and_creates_defense_data(self):
         async def run():

@@ -9,7 +9,6 @@ class UserBase(BaseModel):
     is_superuser: bool = False
     full_name: Optional[str] = None
     role: Optional[str] = "user"
-    tariff: Optional[str] = "free"
     requests_count: Optional[int] = 0
 
 # Properties to receive via API on creation

@@ -13,18 +13,16 @@ class User(Base):
     role = Column(String, default="user", nullable=False)
     is_active = Column(Boolean, default=True)
     is_superuser = Column(Boolean, default=False)
-    tariff = Column(String, default="free")
     requests_count = Column(Integer, default=0)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    chats = relationship("app.models.chat.Chat", back_populates="user")
     interview_sessions = relationship(
         "app.models.interview.InterviewSession",
         back_populates="user",
         cascade="all, delete-orphan",
     )
-    tariff_limit = relationship(
-        "app.models.interview.TariffLimit",
+    usage_limit = relationship(
+        "app.models.interview.UsageLimit",
         back_populates="user",
         uselist=False,
         cascade="all, delete-orphan",
