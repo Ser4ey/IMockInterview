@@ -49,7 +49,7 @@ const Register: React.FC = () => {
           alignItems: 'stretch',
         }}
       >
-        <Paper sx={{ p: { xs: 3, md: 5 }, borderRadius: 7, bgcolor: 'rgba(255,255,255,0.72)' }}>
+        <Paper sx={{ p: { xs: 3, md: 5 }, borderRadius: '20px', bgcolor: 'rgba(255,255,255,0.72)' }}>
           <Typography variant="overline" color="text.secondary" fontWeight={900}>
             Новый аккаунт
           </Typography>
@@ -99,7 +99,7 @@ const Register: React.FC = () => {
         <Paper
           sx={{
             p: { xs: 3, md: 5 },
-            borderRadius: 7,
+            borderRadius: { xs: '24px', md: '28px' },
             color: '#EFF6EF',
             bgcolor: 'primary.main',
             background:
@@ -118,7 +118,7 @@ const Register: React.FC = () => {
                 key={item}
                 sx={{
                   p: 2,
-                  borderRadius: 4,
+                  borderRadius: '14px',
                   bgcolor: 'rgba(255,255,255,0.1)',
                   color: 'inherit',
                   borderColor: 'rgba(255,255,255,0.14)',

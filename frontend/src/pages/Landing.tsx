@@ -44,7 +44,7 @@ const Landing: React.FC = () => {
             sx={{
               minHeight: { xs: 'auto', md: 560 },
               p: { xs: 3, sm: 5, md: 7 },
-              borderRadius: 7,
+              borderRadius: { xs: '24px', md: '28px' },
               bgcolor: 'rgba(255,255,255,0.62)',
               overflow: 'hidden',
               position: 'relative',
@@ -104,7 +104,7 @@ const Landing: React.FC = () => {
               height: '100%',
               minHeight: 560,
               p: { xs: 3, sm: 4 },
-              borderRadius: 7,
+              borderRadius: { xs: '24px', md: '28px' },
               color: '#EFF6EF',
               bgcolor: 'primary.main',
               background:
@@ -118,31 +118,31 @@ const Landing: React.FC = () => {
               Backend-разработка, Middle, полное интервью
             </Typography>
             <Stack spacing={1.5} sx={{ mt: 4 }}>
-              <Paper sx={{ p: 2, borderRadius: 4, bgcolor: 'rgba(255,255,255,0.1)', color: 'inherit', borderColor: 'rgba(255,255,255,0.14)' }}>
+              <Paper sx={{ p: 2, borderRadius: '14px', bgcolor: 'rgba(255,255,255,0.1)', color: 'inherit', borderColor: 'rgba(255,255,255,0.14)' }}>
                 Расскажите, как вы проектируете REST API и выбираете структуру эндпоинтов?
               </Paper>
-              <Paper sx={{ p: 2, borderRadius: 4, bgcolor: '#FBF8F1', color: 'text.primary' }}>
+              <Paper sx={{ p: 2, borderRadius: '14px', bgcolor: '#FBF8F1', color: 'text.primary' }}>
                 Я начинаю с ресурсов, HTTP-методов, кодов статусов, валидации и контроля доступа.
               </Paper>
-              <Paper sx={{ p: 2, borderRadius: 4, bgcolor: 'rgba(255,255,255,0.1)', color: 'inherit', borderColor: 'rgba(255,255,255,0.14)' }}>
+              <Paper sx={{ p: 2, borderRadius: '14px', bgcolor: 'rgba(255,255,255,0.1)', color: 'inherit', borderColor: 'rgba(255,255,255,0.14)' }}>
                 Хорошо. А как бы вы спроектировали пагинацию для большого списка данных?
               </Paper>
             </Stack>
             <Grid container spacing={1.5} sx={{ mt: 4 }}>
               <Grid size={4}>
-                <Paper sx={{ p: 2, borderRadius: 4, bgcolor: 'rgba(255,255,255,0.1)', color: 'inherit', textAlign: 'center', borderColor: 'rgba(255,255,255,0.14)' }}>
+                <Paper sx={{ p: 2, borderRadius: '14px', bgcolor: 'rgba(255,255,255,0.1)', color: 'inherit', textAlign: 'center', borderColor: 'rgba(255,255,255,0.14)' }}>
                   <Typography variant="h4">8.5</Typography>
                   <Typography variant="caption" sx={{ opacity: 0.74 }}>оценка</Typography>
                 </Paper>
               </Grid>
               <Grid size={4}>
-                <Paper sx={{ p: 2, borderRadius: 4, bgcolor: 'rgba(255,255,255,0.1)', color: 'inherit', textAlign: 'center', borderColor: 'rgba(255,255,255,0.14)' }}>
+                <Paper sx={{ p: 2, borderRadius: '14px', bgcolor: 'rgba(255,255,255,0.1)', color: 'inherit', textAlign: 'center', borderColor: 'rgba(255,255,255,0.14)' }}>
                   <Typography variant="h4">12</Typography>
                   <Typography variant="caption" sx={{ opacity: 0.74 }}>вопросов</Typography>
                 </Paper>
               </Grid>
               <Grid size={4}>
-                <Paper sx={{ p: 2, borderRadius: 4, bgcolor: 'rgba(255,255,255,0.1)', color: 'inherit', textAlign: 'center', borderColor: 'rgba(255,255,255,0.14)' }}>
+                <Paper sx={{ p: 2, borderRadius: '14px', bgcolor: 'rgba(255,255,255,0.1)', color: 'inherit', textAlign: 'center', borderColor: 'rgba(255,255,255,0.14)' }}>
                   <Typography variant="h4">30м</Typography>
                   <Typography variant="caption" sx={{ opacity: 0.74 }}>сессия</Typography>
                 </Paper>
@@ -155,14 +155,14 @@ const Landing: React.FC = () => {
       <Grid container spacing={2.5} sx={{ mt: 3 }}>
         {advantages.map((advantage) => (
           <Grid size={{ xs: 12, md: 4 }} key={advantage.title}>
-            <Paper sx={{ p: 3, height: '100%', borderRadius: 5, bgcolor: 'rgba(255,255,255,0.58)' }}>
+            <Paper sx={{ p: 3, height: '100%', borderRadius: '20px', bgcolor: 'rgba(255,255,255,0.58)' }}>
               <Box
                 sx={{
                   width: 46,
                   height: 46,
                   display: 'grid',
                   placeItems: 'center',
-                  borderRadius: 3,
+                  borderRadius: '12px',
                   color: 'primary.main',
                   bgcolor: 'rgba(238,243,232,0.9)',
                   mb: 2,

@@ -44,7 +44,7 @@ const Login: React.FC = () => {
         <Paper
           sx={{
             p: { xs: 3, md: 5 },
-            borderRadius: 7,
+            borderRadius: { xs: '24px', md: '28px' },
             color: '#EFF6EF',
             bgcolor: 'primary.main',
             background:
@@ -63,7 +63,7 @@ const Login: React.FC = () => {
           </Typography>
         </Paper>
 
-        <Paper sx={{ p: { xs: 3, md: 5 }, borderRadius: 7, bgcolor: 'rgba(255,255,255,0.72)' }}>
+        <Paper sx={{ p: { xs: 3, md: 5 }, borderRadius: '20px', bgcolor: 'rgba(255,255,255,0.72)' }}>
           <Typography variant="h4" component="h2">
             Вход в аккаунт
           </Typography>

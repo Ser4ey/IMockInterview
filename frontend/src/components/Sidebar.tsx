@@ -14,6 +14,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import TipsAndUpdatesIcon from '@mui/icons-material/TipsAndUpdates';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import QuizIcon from '@mui/icons-material/Quiz';
+import ManageSearchIcon from '@mui/icons-material/ManageSearch';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -32,6 +33,7 @@ const Sidebar: React.FC = () => {
     ? [
         { text: 'Типы интервью', icon: <AdminPanelSettingsIcon />, path: '/admin/interview-types' },
         { text: 'Банк вопросов', icon: <QuizIcon />, path: '/admin/questions' },
+        { text: 'История генерации', icon: <ManageSearchIcon />, path: '/admin/question-generation-jobs' },
       ]
     : [];
 
@@ -48,7 +50,7 @@ const Sidebar: React.FC = () => {
         mt: 3,
         p: 1.2,
         border: '1px solid rgba(21, 57, 38, 0.12)',
-        borderRadius: 5,
+        borderRadius: '20px',
         bgcolor: 'rgba(255,255,255,0.52)',
         backdropFilter: 'blur(18px)',
         boxShadow: '0 20px 60px rgba(15, 23, 42, 0.06)',
@@ -71,7 +73,7 @@ const Sidebar: React.FC = () => {
                 onClick={() => navigate(item.path)}
                 sx={{
                   mb: 0.5,
-                  borderRadius: 3,
+                  borderRadius: '10px',
                   '&.Mui-selected': {
                     bgcolor: 'rgba(24, 56, 39, 0.1)',
                     color: 'primary.main',
@@ -92,7 +94,7 @@ const Sidebar: React.FC = () => {
         sx={{
           m: 1,
           p: 2.25,
-          borderRadius: 3.5,
+          borderRadius: '16px',
           bgcolor: 'primary.main',
           color: 'primary.contrastText',
           overflow: 'hidden',
@@ -106,7 +108,7 @@ const Sidebar: React.FC = () => {
               height: 28,
               display: 'grid',
               placeItems: 'center',
-              borderRadius: 2,
+              borderRadius: '10px',
               bgcolor: 'rgba(255,255,255,0.14)',
             }}
           >
