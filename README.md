@@ -1,22 +1,95 @@
 # IMock
 
-IMock - локальный сервис для проведения mock-собеседований. Текущая версия подготовлена для разработки и демонстрации ВКР без Docker: backend работает на FastAPI и SQLite, frontend - на React, Vite и Material UI.
+IMock - веб-сервис для проведения mock-собеседований на основе ИИ. Это не обычный чат: администратор создаёт типы собеседований и банк вопросов, а пользователь проходит интервью по заранее сохранённым вопросам, эталонным ответам и критериям оценки.
 
-## Что уже реализовано
+## Стек
 
-- Регистрация и вход по JWT.
-- Пользовательские интервью с типами `full`, `theory`, `self_presentation`, `technical`.
-- Управляемый сценарий интервью по этапам: `intro`, `self_presentation`, `technical`, `practice`, `soft_skills`, `feedback`, `finished`.
-- История сообщений и защита доступа: пользователь видит только свои интервью.
-- Итоговый результат: общий балл, критерии, рекомендации.
-- Локальный LLM-слой: `LLM_MODE=mock` по умолчанию и подготовленный провайдер `yandex`.
-- Локальные дневные лимиты без Redis/Docker.
-- Demo seed для быстрой демонстрации заполненной системы.
-- Набор backend-тестов и обязательная TypeScript/Vite-сборка frontend.
+- Backend: Python, FastAPI, async SQLAlchemy, SQLite, Alembic, JWT.
+- Frontend: React, TypeScript, Vite, Material UI.
+- LLM: `mock` для локальной демонстрации и `yandex_agents` для AI Studio Agents.
 
-## Локальный запуск без Docker
+## LLM-режимы
 
-### Backend
+В проекте поддерживаются только два режима:
+
+```env
+LLM_MODE=mock
+```
+
+Локальный режим без внешних запросов. Используется по умолчанию для тестов и демонстрации.
+
+```env
+LLM_MODE=yandex_agents
+```
+
+Production-режим через 3 текстовых агента Yandex AI Studio:
+
+- `imock-question-bank-generator` - генерация банка вопросов, Web Search включён.
+- `imock-interviewer` - ведение интервью по текущему вопросу, Web Search выключен.
+- `imock-interview-reviewer` - итоговая оценка интервью, Web Search выключен.
+
+Старый прямой completion-режим через одиночный YandexGPT endpoint удалён.
+
+## Backend env
+
+Создайте файл `backend/.env` на основе `backend/.env.example`:
+
+```env
+PROJECT_NAME=IMock
+API_V1_STR=/api/v1
+DATABASE_URL=sqlite+aiosqlite:///./imock.db
+SECRET_KEY=change-me-in-local-env
+ACCESS_TOKEN_EXPIRE_MINUTES=10080
+BACKEND_CORS_ORIGINS=http://localhost:5173,http://localhost:5174,http://127.0.0.1:5173,http://127.0.0.1:5174
+
+LLM_MODE=mock
+
+YANDEX_FOLDER_ID=
+YANDEX_API_KEY=
+YANDEX_AI_STUDIO_BASE_URL=https://ai.api.cloud.yandex.net/v1
+YANDEX_QUESTION_AGENT_MODEL=
+YANDEX_INTERVIEW_AGENT_MODEL=
+YANDEX_REVIEW_AGENT_MODEL=
+YANDEX_AGENTS_TIMEOUT_SECONDS=60
+YANDEX_AGENT_STORE_RESPONSES=false
+```
+
+Для режима `yandex_agents` заполните `YANDEX_API_KEY`, `YANDEX_FOLDER_ID` и три значения `YANDEX_*_AGENT_MODEL`. Значения agent model берите из AI Studio в блоке "Посмотреть код", из поля `model`.
+
+API-ключи нельзя коммитить в репозиторий.
+
+## Настройка агентов AI Studio
+
+### Question Bank Generator
+
+- Model: YandexGPT 5.1 Pro.
+- Tools: Web Search включён.
+- Temperature: `0.25`.
+- Max output tokens: `4000`.
+- Response format: strict JSON schema.
+- Ответ: объект `{ "questions": [...] }`.
+
+### Interviewer
+
+- Model: YandexGPT 5.1 Pro.
+- Tools: выключены.
+- Temperature: `0.35`.
+- Max output tokens: `900`.
+- Response format: strict JSON schema.
+- Ответ: `message`, `should_ask_follow_up`, `covered_criteria`, `missing_criteria`.
+
+### Interview Reviewer
+
+- Model: YandexGPT 5.1 Pro.
+- Tools: выключены.
+- Temperature: `0.2`.
+- Max output tokens: `1800`.
+- Response format: strict JSON schema.
+- Ответ: `score`, `correctness`, `completeness`, `depth`, `communication`, `strengths`, `weaknesses`, `recommendations`, `summary`.
+
+## Запуск
+
+Backend:
 
 ```powershell
 cd C:\Users\Sergey\Desktop\ВКР\IMock\backend
@@ -27,13 +100,7 @@ Copy-Item .env.example .env
 python -m uvicorn app.main:app --reload
 ```
 
-Backend будет доступен на `http://localhost:8000`.
-
-Swagger: `http://localhost:8000/docs`.
-
-При первом старте приложение создаёт таблицы SQLite автоматически через `Base.metadata.create_all`.
-
-### Frontend
+Frontend:
 
 ```powershell
 cd C:\Users\Sergey\Desktop\ВКР\IMock\frontend
@@ -42,45 +109,19 @@ Copy-Item .env.example .env
 npm run dev
 ```
 
-Frontend будет доступен на `http://localhost:5173`.
-
-## Demo seed
-
-Чтобы заполнить локальную базу демонстрационными данными:
+Seed:
 
 ```powershell
 cd C:\Users\Sergey\Desktop\ВКР\IMock\backend
 python .\scripts\seed_demo.py
 ```
 
-Демо-пользователь:
+Тестовые пользователи:
 
-```text
-email: demo@imock.dev
-password: demo12345
-```
+- admin: `admin@example.com` / `admin123`
+- user: `user@example.com` / `user123`
 
-Seed идемпотентный: его можно запускать повторно, он не должен плодить дубликаты.
-
-## Настройка LLM
-
-По умолчанию используется стабильный локальный режим:
-
-```env
-LLM_MODE=mock
-```
-
-Для будущей проверки YandexGPT:
-
-```env
-LLM_MODE=yandex
-YANDEX_FOLDER_ID=...
-YANDEX_API_KEY=...
-```
-
-Если `LLM_MODE=yandex`, но ключи не заданы, клиент безопасно откатывается к mock-режиму.
-
-## Проверка
+## Проверки
 
 Backend:
 
@@ -94,10 +135,31 @@ Frontend:
 ```powershell
 cd C:\Users\Sergey\Desktop\ВКР\IMock\frontend
 npm run build
+npm run test:e2e
+npm run screenshots:vkr
 ```
 
-Эти две команды являются текущим обязательным минимумом перед защитной демонстрацией и перед дальнейшими доработками.
+Live smoke для AI Studio Agents:
 
-## Docker
+1. Создать 3 агента в AI Studio.
+2. Заполнить `backend/.env`.
+3. Установить `LLM_MODE=yandex_agents`.
+4. Перезапустить backend.
+5. Войти как admin и сгенерировать 1 вопрос.
+6. Войти как user, пройти короткое интервью, завершить его и проверить результат.
 
-Docker сейчас намеренно не является обязательным для локальной разработки. Его нужно возвращать отдельным 10-м этапом, когда локальный backend, frontend, тесты и демонстрационный сценарий уже стабильны.
+## Основной сценарий защиты
+
+1. Войти как администратор.
+2. Создать тип собеседования.
+3. Запустить генерацию вопросов.
+4. Показать банк вопросов, эталонные ответы, критерии и источники.
+5. Войти как пользователь.
+6. Выбрать тип собеседования и уровень.
+7. Пройти интервью.
+8. Получить итоговую оценку.
+9. Открыть историю и прогресс.
+
+## Важно
+
+В проекте нет тарифов, подписок, оплат, Free/Pro/Premium и коммерческих ограничений. Технические лимиты используются только как защита от неконтролируемого расходования LLM API.
