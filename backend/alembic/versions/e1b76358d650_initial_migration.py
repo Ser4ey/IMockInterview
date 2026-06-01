@@ -25,7 +25,6 @@ def upgrade() -> None:
     sa.Column('email', sa.String(), nullable=False),
     sa.Column('hashed_password', sa.String(), nullable=False),
     sa.Column('is_active', sa.Boolean(), nullable=True),
-    sa.Column('tariff', sa.String(), nullable=True),
     sa.Column('requests_count', sa.Integer(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
