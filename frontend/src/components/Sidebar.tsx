@@ -92,8 +92,10 @@ const Sidebar: React.FC = () => {
       </Box>
       <Box
         sx={{
-          m: 1,
-          p: 2.25,
+          mx: 0,
+          mt: 1,
+          mb: 0.5,
+          p: 2,
           borderRadius: '16px',
           bgcolor: 'primary.main',
           color: 'primary.contrastText',

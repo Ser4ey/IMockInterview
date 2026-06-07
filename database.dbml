@@ -1,0 +1,212 @@
+Project IMock {
+  database_type: 'SQLite'
+  Note: 'Database schema reconstructed from actual project code: SQLAlchemy ORM models, Alembic revisions, SQLite schema_sync, API schemas, and seed data. Default runtime URL is sqlite+aiosqlite:///./imock.db. Alembic revisions are incomplete for several ORM tables; application startup also runs Base.metadata.create_all via prepare_database().'
+}
+
+Table users {
+  id integer [pk, increment]
+  email varchar [not null]
+  hashed_password varchar [not null]
+  full_name varchar
+  role varchar [not null, default: 'user', note: 'String role. Code uses user/admin. Present in ORM and schema_sync, but not added by an Alembic revision.']
+  is_active boolean [default: true]
+  is_superuser boolean [default: false]
+  requests_count integer [default: 0]
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+
+  Note: 'Application accounts. Alembic creates id/email/hashed_password/is_active/requests_count, later adds full_name/is_superuser. ORM/schema_sync also define role and created_at. is_active, is_superuser, and requests_count remain nullable in migrations/schema_sync despite ORM defaults.'
+
+  Indexes {
+    id [name: 'ix_users_id']
+    email [unique, name: 'ix_users_email']
+    full_name [name: 'ix_users_full_name']
+  }
+}
+
+Table interview_types {
+  id integer [pk, increment]
+  title varchar [not null]
+  role varchar [not null]
+  technology_stack text [not null, default: '']
+  description text [not null, default: '']
+  levels text [not null, default: '["junior", "middle", "senior"]', note: 'JSON-serialized list. API allows junior, middle, senior.']
+  is_active boolean [not null, default: true]
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`, note: 'ORM has onupdate=func.now(); no SQLite trigger was found.']
+
+  Note: 'Interview type / specialization configured by admins.'
+
+  Indexes {
+    id [name: 'ix_interview_types_id']
+    title [unique, name: 'ix_interview_types_title']
+    role [name: 'ix_interview_types_role']
+  }
+}
+
+Table question_sources {
+  id integer [pk, increment]
+  title varchar [not null]
+  url text
+  source_type varchar [not null, default: 'llm', note: 'String source type. Code uses llm, seed, agent.']
+  retrieved_at timestamp
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+
+  Note: 'Source metadata for generated or seeded questions.'
+
+  Indexes {
+    id [name: 'ix_question_sources_id']
+  }
+}
+
+Table questions {
+  id integer [pk, increment]
+  interview_type_id integer [not null]
+  level varchar [not null, note: 'Allowed values in API/services: junior, middle, senior.']
+  question_text text [not null]
+  question_hash varchar [note: 'Added by latest Alembic revision d7c6f7a91a20 for generation diagnostics/deduplication.']
+  expected_answer text [not null, default: '']
+  evaluation_criteria text [not null, default: '[]', note: 'JSON-serialized list.']
+  tags text [not null, default: '[]', note: 'JSON-serialized list.']
+  source_id integer
+  is_active boolean [not null, default: true]
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`, note: 'ORM has onupdate=func.now(); no SQLite trigger was found.']
+
+  Note: 'Question bank entries used by interview sessions.'
+
+  Indexes {
+    id [name: 'ix_questions_id']
+    interview_type_id [name: 'ix_questions_interview_type_id']
+    level [name: 'ix_questions_level']
+    question_hash [name: 'ix_questions_question_hash']
+  }
+}
+
+Table question_generation_jobs {
+  id integer [pk, increment]
+  interview_type_id integer [not null]
+  level varchar [not null, note: 'Allowed values in API/services: junior, middle, senior.']
+  status varchar [not null, default: 'pending', note: 'Enum-like values from code: pending, running, completed, failed. Stored as string.']
+  requested_count integer [not null, default: 0]
+  generated_count integer [not null, default: 0]
+  skipped_count integer [not null, default: 0]
+  provider varchar [not null, default: 'mock', note: 'Provider strings in code include mock, yandex_agent, unknown.']
+  context_used boolean [not null, default: false]
+  input_tokens integer [not null, default: 0]
+  output_tokens integer [not null, default: 0]
+  raw_response_preview text
+  error_message text
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  finished_at timestamp
+
+  Note: 'Audit/diagnostic table for AI question generation jobs.'
+
+  Indexes {
+    id [name: 'ix_question_generation_jobs_id']
+    interview_type_id [name: 'ix_question_generation_jobs_interview_type_id']
+    level [name: 'ix_question_generation_jobs_level']
+  }
+}
+
+Table interview_sessions {
+  id integer [pk, increment]
+  user_id integer [not null]
+  interview_type_id integer [note: 'ORM requires nullable=False, but Alembic revision a2f4c2d91e13 and schema_sync add this column as nullable for existing SQLite DBs.']
+  level varchar [not null, note: 'Allowed values in API/services: junior, middle, senior.']
+  status varchar [not null, default: 'active', note: 'Enum-like values from code: active, finished. Stored as string.']
+  stage varchar [not null, default: 'created', note: 'Enum-like values from code: created, intro, question, follow_up, feedback, finished. Stored as string.']
+  current_question_id integer
+  question_index integer [not null, default: 0]
+  started_at timestamp [default: `CURRENT_TIMESTAMP`]
+  finished_at timestamp
+
+  Note: 'Interview session for a user. No Alembic create_table revision was found for this table; it is created from ORM metadata at application startup. ORM cascades delete-orphan from users to sessions, but no DB-level ON DELETE rule was found.'
+
+  Indexes {
+    id [name: 'ix_interview_sessions_id']
+    user_id [name: 'ix_interview_sessions_user_id']
+    interview_type_id [name: 'ix_interview_sessions_interview_type_id']
+    level [name: 'ix_interview_sessions_level']
+  }
+}
+
+Table interview_messages {
+  id integer [pk, increment]
+  session_id integer [not null]
+  question_id integer
+  sender varchar [not null, note: 'Enum-like values from code: user, ai, system. Stored as string.']
+  content text [not null]
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+
+  Note: 'Messages exchanged during an interview session. No Alembic create_table revision was found; ORM metadata creates the table. ORM cascades delete-orphan from sessions to messages, but no DB-level ON DELETE rule was found.'
+
+  Indexes {
+    id [name: 'ix_interview_messages_id']
+    session_id [name: 'ix_interview_messages_session_id']
+    question_id [name: 'ix_interview_messages_question_id']
+  }
+}
+
+Table interview_results {
+  id integer [pk, increment]
+  session_id integer [not null]
+  score float [not null, default: 0.0]
+  correctness float [not null, default: 0.0]
+  completeness float [not null, default: 0.0]
+  depth float [not null, default: 0.0]
+  communication float [not null, default: 0.0]
+  strengths text [not null, default: '[]', note: 'JSON-serialized list.']
+  weaknesses text [not null, default: '[]', note: 'JSON-serialized list.']
+  recommendations text [not null, default: '']
+  summary text [not null, default: '']
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+
+  Note: 'Final assessment for a completed interview. session_id is unique, so this is one-to-one with interview_sessions. No Alembic create_table revision was found; ORM metadata creates the table.'
+
+  Indexes {
+    id [name: 'ix_interview_results_id']
+    session_id [unique, name: 'ix_interview_results_session_id']
+  }
+}
+
+Table prompt_templates {
+  id integer [pk, increment]
+  name varchar [not null, default: 'default']
+  purpose varchar [not null, default: 'interview']
+  system_prompt text [not null]
+  is_active boolean [not null, default: true]
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`, note: 'ORM has onupdate=func.now(); no SQLite trigger was found.']
+
+  Note: 'Reusable prompt templates. No Alembic create_table revision was found; ORM metadata creates the table. schema_sync includes legacy column additions for SQLite.'
+
+  Indexes {
+    id [name: 'ix_prompt_templates_id']
+  }
+}
+
+Table usage_limits {
+  id integer [pk, increment]
+  user_id integer [not null]
+  daily_limit integer [not null, default: 20]
+  used_today integer [not null, default: 0]
+  reset_at timestamp
+
+  Note: 'Per-user technical request/interview usage limits. No Alembic create_table revision was found; ORM metadata creates the table. ORM cascades delete-orphan from users to usage_limits, but no DB-level ON DELETE rule was found.'
+
+  Indexes {
+    id [name: 'ix_usage_limits_id']
+    user_id [unique, name: 'ix_usage_limits_user_id']
+  }
+}
+
+Ref: questions.interview_type_id > interview_types.id
+Ref: questions.source_id > question_sources.id
+Ref: question_generation_jobs.interview_type_id > interview_types.id
+Ref: interview_sessions.user_id > users.id
+Ref: interview_sessions.interview_type_id > interview_types.id
+Ref: interview_sessions.current_question_id > questions.id
+Ref: interview_messages.session_id > interview_sessions.id
+Ref: interview_messages.question_id > questions.id
+Ref: interview_results.session_id - interview_sessions.id
+Ref: usage_limits.user_id - users.id

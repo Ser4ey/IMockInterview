@@ -29,14 +29,45 @@ const demoUser = {
   created_at: '2026-05-12T09:00:00',
 };
 
+const demoInterviewTypes = [
+  {
+    id: 1,
+    title: 'Backend Java-разработчик',
+    role: 'Backend Java-разработчик',
+    technology_stack: 'Java, Spring Boot, PostgreSQL, REST API',
+    description: 'Техническое собеседование по backend-разработке и проектированию API.',
+    levels: ['middle', 'senior'],
+    is_active: true,
+    created_at: '2026-05-01T09:00:00',
+    updated_at: null,
+    question_counts: { middle: 12, senior: 8 },
+  },
+  {
+    id: 2,
+    title: 'Frontend React-разработчик',
+    role: 'Frontend React-разработчик',
+    technology_stack: 'React, TypeScript, UI architecture',
+    description: 'Собеседование по frontend-разработке, состоянию приложения и компонентному дизайну.',
+    levels: ['junior', 'middle'],
+    is_active: true,
+    created_at: '2026-05-01T09:00:00',
+    updated_at: null,
+    question_counts: { junior: 10, middle: 9 },
+  },
+];
+
 const activeSession = {
   id: 101,
   user_id: 1,
-  specialization: 'Backend-разработка / Python',
-  level: 'Middle',
-  interview_type: 'full',
+  interview_type_id: 1,
+  interview_type_title: 'Backend Java-разработчик',
+  role: 'Backend Java-разработчик',
+  technology_stack: 'Java, Spring Boot, PostgreSQL, REST API',
+  level: 'middle',
   status: 'active',
-  stage: 'technical',
+  stage: 'question',
+  current_question_id: 1,
+  question_index: 1,
   started_at: '2026-05-12T10:30:00',
   finished_at: null,
 };
@@ -44,11 +75,15 @@ const activeSession = {
 const resultSession = {
   id: 201,
   user_id: 1,
-  specialization: 'Python Backend',
-  level: 'Middle',
-  interview_type: 'full',
+  interview_type_id: 1,
+  interview_type_title: 'Backend Java-разработчик',
+  role: 'Backend Java-разработчик',
+  technology_stack: 'Java, Spring Boot, PostgreSQL, REST API',
+  level: 'middle',
   status: 'finished',
   stage: 'finished',
+  current_question_id: null,
+  question_index: 4,
   started_at: '2026-05-11T11:00:00',
   finished_at: '2026-05-11T11:45:00',
 };
@@ -59,22 +94,30 @@ const demoSessions = [
   {
     id: 202,
     user_id: 1,
-    specialization: 'REST API и базы данных',
-    level: 'Middle',
-    interview_type: 'technical',
+    interview_type_id: 1,
+    interview_type_title: 'Backend Java-разработчик',
+    role: 'Backend Java-разработчик',
+    technology_stack: 'Java, Spring Boot, PostgreSQL, REST API',
+    level: 'middle',
     status: 'finished',
     stage: 'finished',
+    current_question_id: null,
+    question_index: 3,
     started_at: '2026-05-09T16:00:00',
     finished_at: '2026-05-09T16:35:00',
   },
   {
     id: 203,
     user_id: 1,
-    specialization: 'System Design',
-    level: 'Senior',
-    interview_type: 'technical',
+    interview_type_id: 2,
+    interview_type_title: 'Frontend React-разработчик',
+    role: 'Frontend React-разработчик',
+    technology_stack: 'React, TypeScript, UI architecture',
+    level: 'middle',
     status: 'finished',
     stage: 'finished',
+    current_question_id: null,
+    question_index: 5,
     started_at: '2026-05-07T14:00:00',
     finished_at: '2026-05-07T14:50:00',
   },
@@ -112,8 +155,18 @@ const demoResult = {
   completeness: 82,
   depth: 80,
   communication: 88,
+  strengths: [
+    'Уверенно объясняет REST-подход и назначение HTTP-методов.',
+    'Связывает проектирование API с валидацией, доступом и кодами статусов.',
+  ],
+  weaknesses: [
+    'Стоит подробнее проговаривать trade-off при выборе пагинации и кеширования.',
+    'Ответы можно усиливать конкретными примерами из PostgreSQL и сервисного слоя.',
+  ],
   recommendations:
     'Сильные стороны: уверенное понимание REST, HTTP-методов и базовой архитектуры API. Зоны роста: подробнее раскрывать trade-off при выборе пагинации, стратегий кеширования и изоляции бизнес-логики. Рекомендуется повторить транзакции, индексы PostgreSQL и паттерны проектирования сервисного слоя.',
+  summary:
+    'Кандидат показывает уверенную базу backend-разработки и способен структурировать ответы. Для более высокого результата нужно глубже раскрывать архитектурные компромиссы.',
   created_at: '2026-05-11T11:46:00',
 };
 
@@ -217,6 +270,10 @@ async function installDemoApi(context) {
       return fulfillJson(route, demoSessions);
     }
 
+    if (method === 'GET' && pathname === '/interview-types') {
+      return fulfillJson(route, demoInterviewTypes);
+    }
+
     if (method === 'POST' && pathname === '/interviews') {
       return fulfillJson(route, activeSession, 201);
     }
@@ -303,6 +360,7 @@ async function take(page, fileName) {
   await page.screenshot({
     path: path.join(screenshotsDir, fileName),
     fullPage: false,
+    animations: 'disabled',
   });
   console.log(`saved ${fileName}`);
 }
@@ -334,7 +392,7 @@ async function captureDashboardPages() {
   const { browser, page } = await createBrowserPage({ authenticated: true, mockApi: true });
   try {
     await page.goto(`${frontendUrl}/dashboard`, { waitUntil: 'networkidle' });
-    await page.getByRole('heading', { name: /продолжим тренировать собеседования/i }).waitFor();
+    await page.getByRole('heading', { name: /выберите собеседование из банка IMock/i }).waitFor();
     await take(page, 'fig_06_dashboard.png');
 
     await page.evaluate(() => window.scrollTo(0, 260));
@@ -349,10 +407,11 @@ async function captureSetupPages() {
   const { browser, page } = await createBrowserPage({ authenticated: true, mockApi: true });
   try {
     await page.goto(`${frontendUrl}/dashboard`, { waitUntil: 'networkidle' });
-    await page.getByRole('heading', { name: /продолжим тренировать собеседования/i }).waitFor();
+    await page.getByRole('heading', { name: /выберите собеседование из банка IMock/i }).waitFor();
     await page.getByRole('button', { name: /Новое mock-собеседование/i }).click();
+    await page.getByRole('dialog').waitFor();
     await page.getByRole('heading', { name: /Настройка интервью/i }).waitFor();
-    await page.getByLabel('Специализация').fill('Backend-разработка / Python');
+    await page.getByText(/Активных вопросов для уровня/i).waitFor();
     await take(page, 'fig_03_interview_setup.png');
     await take(page, 'fig_B03_interview_setup.png');
   } finally {
@@ -365,7 +424,7 @@ async function captureInterviewPages() {
   const { browser, page } = await createBrowserPage({ authenticated: true, mockApi: true });
   try {
     await page.goto(`${frontendUrl}/interviews/${activeSession.id}`, { waitUntil: 'networkidle' });
-    await page.getByRole('heading', { name: activeSession.specialization }).waitFor();
+    await page.getByRole('heading', { name: activeSession.interview_type_title }).waitFor();
     await page.getByText(/Расскажите, пожалуйста, как устроена архитектура REST API/i).waitFor();
     await page.getByPlaceholder(/Введите ответ кандидата/i).fill('Я бы добавил cursor-based пагинацию, ограничение размера страницы и стабильную сортировку по неизменяемому полю.');
     await take(page, 'fig_04_interview_chat.png');

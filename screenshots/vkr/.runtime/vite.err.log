@@ -4,3 +4,16 @@ Error: Port 5173 is already in use
     at Server.emit (node:events:518:28)
     at emitErrorNT (node:net:1973:8)
     at process.processTicksAndRejections (node:internal/process/task_queues:90:21)[39m
+[31mfailed to load config from C:\Users\Sergey\Desktop\VKR\IMockInterview\frontend\vite.config.ts[39m
+[31merror when starting dev server:
+Error: spawn EPERM
+    at ChildProcess.spawn (node:internal/child_process:441:11)
+    at Object.spawn (node:child_process:796:9)
+    at ensureServiceIsRunning (C:\Users\Sergey\Desktop\VKR\IMockInterview\frontend\node_modules\esbuild\lib\main.js:1978:29)
+    at build (C:\Users\Sergey\Desktop\VKR\IMockInterview\frontend\node_modules\esbuild\lib\main.js:1876:26)
+    at bundleConfigFile (file:///C:/Users/Sergey/Desktop/VKR/IMockInterview/frontend/node_modules/vite/dist/node/chunks/config.js:35835:23)
+    at bundleAndLoadConfigFile (file:///C:/Users/Sergey/Desktop/VKR/IMockInterview/frontend/node_modules/vite/dist/node/chunks/config.js:35822:24)
+    at loadConfigFromFile (file:///C:/Users/Sergey/Desktop/VKR/IMockInterview/frontend/node_modules/vite/dist/node/chunks/config.js:35791:179)
+    at resolveConfig (file:///C:/Users/Sergey/Desktop/VKR/IMockInterview/frontend/node_modules/vite/dist/node/chunks/config.js:35440:28)
+    at _createServer (file:///C:/Users/Sergey/Desktop/VKR/IMockInterview/frontend/node_modules/vite/dist/node/chunks/config.js:25381:73)
+    at createServer$2 (file:///C:/Users/Sergey/Desktop/VKR/IMockInterview/frontend/node_modules/vite/dist/node/chunks/config.js:25378:9)[39m
