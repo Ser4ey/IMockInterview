@@ -12,7 +12,21 @@ const backendPort = 18000;
 const frontendPort = 15173;
 const backendUrl = `http://127.0.0.1:${backendPort}`;
 const frontendUrl = `http://127.0.0.1:${frontendPort}`;
-const pythonExe = path.join(backendDir, 'venv', 'Scripts', 'python.exe');
+function resolveBackendPython() {
+  if (process.env.IMOCK_BACKEND_PYTHON) {
+    return process.env.IMOCK_BACKEND_PYTHON;
+  }
+  const venvPython = path.join(backendDir, 'venv', 'Scripts', 'python.exe');
+  if (fs.existsSync(venvPython)) {
+    return venvPython;
+  }
+  throw new Error(
+    `Backend Python executable not found at ${venvPython}. ` +
+      'Create backend venv or set IMOCK_BACKEND_PYTHON to a Python executable with backend dependencies installed.',
+  );
+}
+
+const pythonExe = resolveBackendPython();
 
 const children = [];
 const terminatingPids = new Set();
@@ -36,6 +50,9 @@ function logPath(name) {
 
 function runChecked(command, args, options) {
   const result = spawnSync(command, args, { stdio: 'inherit', ...options });
+  if (result.error) {
+    throw new Error(`${command} ${args.join(' ')} failed: ${result.error.message}`);
+  }
   if (result.status !== 0) {
     throw new Error(`${command} ${args.join(' ')} failed with exit code ${result.status}`);
   }
