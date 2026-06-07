@@ -1115,3 +1115,795 @@ command: npm run build final; expected finite; reason: final frontend build afte
 command: git status short final; expected finite; reason: confirm final workspace status after cleanup; timeout: 120000; expected: status list
 command: rg final active legacy scan after cleanup rename; expected finite; reason: verify no active legacy terms remain; timeout: 120000; expected: no matches
 command: python unittest discover after final cleanup rename; expected finite; reason: verify schema cleanup rename did not break backend; timeout: 120000; expected: tests OK
+
+## 2026-06-02 - inspect repo files
+Command: Get-ChildItem -Force
+Expected: finite command
+Why non-blocking: directory listing exits immediately
+Timeout: 10000 ms
+Expected result: repository root contents
+
+## 2026-06-02 - read llm client
+Command: Get-Content -Path backend\\app\\services\\llm_client.py
+Expected: finite command
+Why non-blocking: reads one source file and exits
+Timeout: 30000 ms
+Expected result: full llm_client.py content for selecting VKR snippets
+
+## 2026-06-02 - read question generation service
+Command: Get-Content -Path backend\\app\\services\\question_generation.py
+Expected: finite command
+Why non-blocking: reads one source file and exits
+Timeout: 20000 ms
+Expected result: question generation service content
+
+## 2026-06-02 - read interview engine
+Command: Get-Content -Path backend\\app\\services\\interview_engine.py
+Expected: finite command
+Why non-blocking: reads one source file and exits
+Timeout: 30000 ms
+Expected result: interview engine content for VKR snippets
+
+## 2026-06-02 - read frontend package json
+Command: Get-Content -Path frontend\\package.json
+Expected: finite command
+Why non-blocking: reads package manifest and exits
+Timeout: 10000 ms
+Expected result: frontend scripts list
+
+## 2026-06-02 - read README
+Command: Get-Content -Path README.md
+Expected: finite command
+Why non-blocking: reads README and exits
+Timeout: 20000 ms
+Expected result: documented commands for tests and screenshots
+
+## 2026-06-02 - list backend files
+Command: Get-ChildItem -Path backend -Force
+Expected: finite command
+Why non-blocking: directory listing exits immediately
+Timeout: 10000 ms
+Expected result: backend root files for test command discovery
+
+## 2026-06-02 - inspect frontend dependencies after e2e failure retry outside sandbox
+Command: Get-ChildItem -Path frontend -Force
+Expected: finite command
+Why non-blocking: directory listing exits immediately
+Timeout: 10000 ms
+Expected result: frontend root contents, including whether node_modules/package-lock exist
+
+## 2026-06-02 - install frontend dependencies retry outside sandbox
+Command: npm ci
+Expected: finite command
+Why non-blocking: npm ci installs dependencies from lockfile and exits; it does not start a watcher/server
+Timeout: 180000 ms
+Expected result: node_modules restored, including playwright
+
+## 2026-06-02 - locate npm executable
+Command: where.exe npm
+Expected: finite command
+Why non-blocking: searches PATH for npm executable and exits
+Timeout: 10000 ms
+Expected result: npm executable path or confirmation it is not in tool PATH
+
+## 2026-06-02 - read backend seed script retry outside sandbox
+Command: Get-Content -Path backend\\scripts\\seed_demo.py
+Expected: finite command
+Why non-blocking: reads one Python script and exits
+Timeout: 30000 ms
+Expected result: seed script content to diagnose e2e failure
+
+## 2026-06-02 - inspect backend venv python path retry outside sandbox
+Command: Test-Path backend\\venv\\Scripts\\python.exe
+Expected: finite command
+Why non-blocking: checks one filesystem path and exits
+Timeout: 10000 ms
+Expected result: whether e2e python executable exists
+
+## 2026-06-02 - read e2e script after seed failure retry outside sandbox
+Command: Get-Content -Path frontend\\tests\\e2e\\imock.e2e.mjs
+Expected: finite command
+Why non-blocking: reads one test script and exits
+Timeout: 30000 ms
+Expected result: e2e orchestration code around seed_demo launch
+
+## 2026-06-02 - locate python executable for e2e fallback
+Command: where.exe python
+Expected: finite command
+Why non-blocking: searches PATH and exits
+Timeout: 10000 ms
+Expected result: python executable path or not found
+
+## 2026-06-02 - inspect final e2e diff
+Command: git diff -- frontend/tests/e2e/imock.e2e.mjs
+Expected: finite command
+Why non-blocking: git diff prints local file diff and exits
+Timeout: 10000 ms
+Expected result: confirm e2e python resolution changes
+
+## 2026-06-02 - install backend dependencies without proxy env
+Command: Remove proxy env vars for this process; run backend venv pip install -r requirements.txt
+Expected: finite command
+Why non-blocking: pip installs packages from requirements and exits; it does not start servers or watchers
+Timeout: 300000 ms
+Expected result: backend dependencies installed, including sqlalchemy
+
+## 2026-06-02 - inspect pip config for proxy
+Command: .\\backend\\venv\\Scripts\\python.exe -m pip config list
+Expected: finite command
+Why non-blocking: pip config list prints configuration and exits
+Timeout: 30000 ms
+Expected result: pip proxy/index configuration
+
+## 2026-06-02 - inspect proxy env names only
+Command: (Get-ChildItem Env:*PROXY*).Name
+Expected: finite command
+Why non-blocking: lists matching environment variable names only and exits
+Timeout: 10000 ms
+Expected result: proxy environment variable names without sensitive values
+
+## 2026-06-02 - inspect pip env names only
+Command: (Get-ChildItem Env:PIP*).Name
+Expected: finite command
+Why non-blocking: lists matching environment variable names only and exits
+Timeout: 10000 ms
+Expected result: pip-related environment variable names without sensitive values
+
+## 2026-06-02 - install backend dependencies with empty pip proxy
+Command: .\\backend\\venv\\Scripts\\python.exe -m pip install --proxy '' -r .\\backend\\requirements.txt
+Expected: finite command
+Why non-blocking: pip installs packages from requirements and exits; it does not start servers or watchers
+Timeout: 300000 ms
+Expected result: backend dependencies installed without SOCKS proxy
+
+## 2026-06-02 - install backend dependencies with pip isolated mode
+Command: .\\backend\\venv\\Scripts\\python.exe -m pip --isolated install -r .\\backend\\requirements.txt
+Expected: finite command
+Why non-blocking: pip installs packages from requirements and exits; isolated mode ignores proxy/env config
+Timeout: 300000 ms
+Expected result: backend dependencies installed without inheriting SOCKS settings
+
+## 2026-06-02 - list python launcher installations
+Command: py -0p
+Expected: finite command
+Why non-blocking: Python launcher lists interpreters and exits
+Timeout: 10000 ms
+Expected result: installed Python interpreter paths
+
+## 2026-06-02 - read backend requirements
+Command: Get-Content -Path backend\\requirements.txt
+Expected: finite command
+Why non-blocking: reads one requirements file and exits
+Timeout: 10000 ms
+Expected result: backend dependency list
+
+## 2026-06-02 - search local PySocks module
+Command: Get-ChildItem -Path C:\\Users\\Sergey -Filter socks.py -Recurse -ErrorAction SilentlyContinue
+Expected: finite command
+Why non-blocking: bounded search in user profile for a single filename; exits after scan
+Timeout: 60000 ms
+Expected result: any local PySocks module copies
+
+## 2026-06-02 - search local PySocks package metadata
+Command: Get-ChildItem -Path C:\\Users\\Sergey -Filter PySocks* -Recurse -ErrorAction SilentlyContinue
+Expected: finite command
+Why non-blocking: bounded search in user profile for package metadata/files; exits after scan
+Timeout: 60000 ms
+Expected result: local PySocks package copies if present
+
+## 2026-06-02 - read prompt builder for agent settings
+Command: Get-Content -Path backend\\app\\services\\prompt_builder.py
+Expected: finite command
+Why non-blocking: reads one source file and exits
+Timeout: 30000 ms
+Expected result: prompts for three Yandex AI Studio agents
+
+## 2026-06-02 - inspect project agent configuration
+
+- Command: `Get-ChildItem -Force`
+- Expected: finite command, not a background process.
+- Why it should not block: lists only the current workspace directory.
+- Timeout: 10000 ms.
+- Expected result: top-level project files and folders so agent/config locations can be found.
+
+## 2026-06-02 - search agent and llm configuration
+
+- Command: `rg -n "agent|interview|LLM|llm|prompt|system|openai|chatgpt|gemini|schema|json" -S backend frontend docs README.md architecture.md project.md instruction.md`
+- Expected: finite command, not a background process.
+- Why it should not block: ripgrep scans bounded project files and exits after printing matches.
+- Timeout: 20000 ms.
+- Expected result: locations of agent prompts, LLM settings, and schema-related code/docs.
+
+## 2026-06-02 - read README agent settings
+
+- Command: `Get-Content README.md -TotalCount 120`
+- Expected: finite command, not a background process.
+- Why it should not block: reads the first 120 lines of one markdown file.
+- Timeout: 10000 ms.
+- Expected result: documented AI Studio agent names, response formats, and environment variables.
+
+## 2026-06-02 - read backend llm settings and schemas
+
+- Command: `Get-Content backend/app/core/config.py; Get-Content backend/app/services/llm_client.py; Get-Content backend/app/services/prompt_builder.py`
+- Expected: finite command, not a background process.
+- Why it should not block: reads three bounded Python source files and exits.
+- Timeout: 20000 ms.
+- Expected result: exact environment variables, request payloads, expected JSON fields, and prompts.
+- 2026-06-04: `Get-Content -Path work-logs.md -Tail 80`
+  - Expected: finite read command.
+  - Why it should not block: reads the tail of one local markdown file and exits.
+  - Timeout: 10000 ms.
+  - Expected result: show recent project command log context before further shell use.
+
+## 2026-06-04 - database schema analysis
+Command: rg --files
+Expected: finite command, not a background process
+Why non-blocking: ripgrep lists files in the bounded workspace and exits
+Timeout: 20000 ms
+Expected result: project file list for locating database schema sources
+
+## 2026-06-04 - database schema analysis
+Command: rg -n "__tablename__|Column\(|mapped_column|relationship\(|ForeignKey|UniqueConstraint|Index\(|Enum\(|CREATE TABLE|create_table|op\.create_table|op\.add_column|op\.create_index|op\.create_foreign_key|postgres|sqlite|mysql|DATABASE|SQLALCHEMY|asyncpg|psycopg" -S backend docker-compose.yml README.md
+Expected: finite command, not a background process
+Why non-blocking: ripgrep scans bounded backend/project files for database schema markers and exits
+Timeout: 30000 ms
+Expected result: locations of ORM models, migrations, SQL/schema files, and database configuration
+
+## 2026-06-04 - database schema analysis
+Command: Get-Content backend\alembic\versions\*.py; Get-Content backend\app\models\*.py; Get-Content backend\app\db\schema_sync.py; Get-Content backend\app\core\config.py; Get-Content backend\scripts\seed_demo.py
+Expected: finite command, not a background process
+Why non-blocking: reads bounded Python source files and exits
+Timeout: 30000 ms
+Expected result: migration definitions, ORM models, schema sync behavior, database config, and seed reference values
+
+## 2026-06-04 - database schema analysis
+Command: Get-Content backend\app\db\base.py; Get-Content backend\app\db\session.py; Get-Content backend\app\services\demo_seed.py; Get-Content backend\app\schemas\interview.py; Get-Content backend\app\schemas\user.py
+Expected: finite command, not a background process
+Why non-blocking: reads bounded backend source files and exits
+Timeout: 30000 ms
+Expected result: model registration, DB engine setup, seed values, and schema enums used by API
+
+## 2026-06-04 - database schema analysis
+Command: rg --files | rg -i "(schema|migration|models|entities|\.sql$|prisma|drizzle|sequelize|typeorm|alembic|django|rails|seed)"
+Expected: finite command, not a background process
+Why non-blocking: ripgrep lists files and filters names in the bounded workspace, then exits
+Timeout: 20000 ms
+Expected result: confirmation of all database-related source file categories
+
+## 2026-06-04 - database schema analysis
+Command: Get-ChildItem -Directory -Force
+Expected: finite command, not a background process
+Why non-blocking: lists only top-level directories in the bounded workspace and exits
+Timeout: 10000 ms
+Expected result: determine whether a docs directory exists for database.dbml placement
+
+## 2026-06-04 - database schema analysis
+Command: rg -n "role\s*=|role\s*==|role\s*:\s*|is_superuser|InterviewStatus|InterviewStage|MessageSender|QuestionGenerationStatus|junior|middle|senior|source_type|provider" -S backend frontend
+Expected: finite command, not a background process
+Why non-blocking: ripgrep scans bounded source trees for enum-like literals and exits
+Timeout: 30000 ms
+Expected result: enum/string value usage for DBML notes
+
+## 2026-06-04 - database schema analysis
+Command: rg -n "dbml|@dbml/core|dbdiagram" -S package.json frontend\package.json frontend\package-lock.json backend\requirements.txt
+Expected: finite command, not a background process
+Why non-blocking: ripgrep scans known dependency manifests and exits
+Timeout: 10000 ms
+Expected result: whether a DBML parser/CLI is already available locally
+
+## 2026-06-04 - database schema analysis
+Command: Get-Content backend\app\main.py; Get-Content backend\alembic\env.py; Get-Content docker-compose.yml; Get-Content README.md -TotalCount 80
+Expected: finite command, not a background process
+Why non-blocking: reads bounded project setup files and exits
+Timeout: 20000 ms
+Expected result: startup schema preparation and database runtime configuration details
+
+## 2026-06-07 - architecture diagram review
+Command: Get-Content -Path work-logs.md -Tail 40
+Expected: finite command, not a background process
+Why non-blocking: reads only the tail of one local markdown file and exits
+Timeout: 10000 ms
+Expected result: recent command-log context before further shell use
+
+## 2026-06-07 - architecture diagram review
+Command: rg -n "APIRouter|include_router|class .*Service|class .*Client|LLM_MODE|YANDEX|create_local_tables|prepare_database|InterviewEngine|QuestionGenerationService|PromptBuilder|create_async_engine|axios|VITE_API|/api/v1" -S backend frontend\src README.md architecture.md
+Expected: finite command, not a background process
+Why non-blocking: ripgrep scans bounded backend/frontend source files and exits
+Timeout: 30000 ms
+Expected result: real architecture entry points, services, clients, and API configuration
+
+## 2026-06-07 - architecture diagram review
+Command: Get-Content backend\app\api\api.py; Get-Content backend\app\api\endpoints\interviews.py; Get-Content backend\app\api\endpoints\admin.py; Get-Content backend\app\services\interview_engine.py; Get-Content backend\app\services\question_generation.py; Get-Content backend\app\services\llm_client.py; Get-Content frontend\src\api\client.ts; Get-Content frontend\src\api\interviews.ts; Get-Content frontend\src\api\admin.ts
+Expected: finite command, not a background process
+Why non-blocking: reads bounded source files and exits
+Timeout: 40000 ms
+Expected result: concrete API routes, services, LLM client methods, and frontend API usage
+
+## 2026-06-07 - architecture diagram review
+Command: rg -n "QUESTION_BANK_SCHEMA|INTERVIEW_REPLY_SCHEMA|EVALUATION_SCHEMA|class BaseLLMClient|class MockLLMClient|class YandexAIStudioAgentsClient|def generate_question_bank|def conduct_interview_turn|def evaluate_interview|def _create_response|def get_llm_client|llm_client =" -S backend\app\services\llm_client.py backend\app\services\interview_engine.py backend\app\services\question_generation.py README.md
+Expected: finite command, not a background process
+Why non-blocking: ripgrep scans a few bounded files for LLM agent method names and exits
+Timeout: 20000 ms
+Expected result: concrete three-agent responsibilities and client factory names
+
+## 2026-06-07 - architecture diagram review
+Command: Get-Content backend\app\services\llm_client.py -TotalCount 360; Get-Content backend\app\services\interview_engine.py -TotalCount 340; Get-Content backend\app\services\question_generation.py -TotalCount 160; Get-Content backend\app\services\prompt_builder.py -TotalCount 140; Get-Content README.md -TotalCount 160
+Expected: finite command, not a background process
+Why non-blocking: reads bounded portions of service and documentation files, then exits
+Timeout: 40000 ms
+Expected result: service responsibilities, agent request methods, prompts, and README agent descriptions
+
+## 2026-06-07 - architecture diagram review
+Command: rg -n "class User|class InterviewType|class Question|class QuestionGenerationJob|class InterviewSession|class Message|class InterviewResult|class PromptTemplate|class UsageLimit|class LimitService|def consume_interview_message|def get_current|JWT|OAuth2|usage_limit|prepare_database|Base.metadata.create_all" -S backend\app\models backend\app\services\limits.py backend\app\api\deps.py backend\app\api\endpoints\progress.py backend\app\db\schema_sync.py backend\app\core\security.py
+Expected: finite command, not a background process
+Why non-blocking: ripgrep scans bounded backend files for data, auth, and limits modules and exits
+Timeout: 20000 ms
+Expected result: actual data/auth/support modules for diagram inclusion decisions
+## 2026-06-07 22:00 - design spec read
+- Command: Get-Content -Path docs/design-nordic-studio.md -TotalCount 220
+- Expected: finite read.
+- Why it should not block: Get-Content reads a bounded local markdown file and exits.
+- Timeout: 10000 ms.
+- Expected result: Nordic Studio design constraints are displayed for reference.
+## 2026-06-07 22:01 - locate design and frontend files
+- Command: rg --files
+- Expected: finite file listing.
+- Why it should not block: rg --files enumerates repository files once and exits.
+- Timeout: 10000 ms.
+- Expected result: File list is displayed so the design spec and relevant frontend files can be located.
+## 2026-06-07 22:02 - read frontend theme
+- Command: Get-Content -Path frontend/src/theme.ts
+- Expected: finite file read.
+- Why it should not block: Get-Content reads one local TypeScript file and exits.
+- Timeout: 10000 ms.
+- Expected result: Theme values are displayed to keep the change consistent with existing design tokens.
+## 2026-06-07 22:04 - read main layout
+- Command: Get-Content -Path frontend/src/layouts/MainLayout.tsx
+- Expected: finite file read.
+- Why it should not block: Get-Content reads one local TSX file and exits.
+- Timeout: 10000 ms.
+- Expected result: Main layout spacing is displayed to keep sidebar spacing consistent.
+## 2026-06-07 22:04 - read header component
+- Command: Get-Content -Path frontend/src/components/Header.tsx
+- Expected: finite file read.
+- Why it should not block: Get-Content reads one local TSX file and exits.
+- Timeout: 10000 ms.
+- Expected result: Header spacing and brand styling are displayed for visual consistency.
+## 2026-06-07 22:07 - review sidebar diff
+- Command: git diff -- frontend/src/components/Sidebar.tsx
+- Expected: finite diff.
+- Why it should not block: git diff reads local repository metadata and exits.
+- Timeout: 10000 ms.
+- Expected result: Only the intended sidebar spacing changes are shown.
+## 2026-06-07 22:08 - frontend build
+- Command: npm run build
+- Expected: finite production build.
+- Why it should not block: npm build runs Vite build once and exits without starting a watcher or server.
+- Timeout: 120000 ms.
+- Expected result: Frontend production build completes successfully or reports compile errors.
+## 2026-06-07 22:09 - frontend build outside sandbox after EPERM
+- Command: npm run build
+- Expected: finite production build.
+- Why it should not block: npm build runs TypeScript and Vite build once and exits without starting a watcher or server.
+- Timeout: 120000 ms.
+- Expected result: Build completes successfully outside sandbox or reports real compile errors.
+## 2026-06-07 22:10 - check git status
+- Command: git status --short
+- Expected: finite status check.
+- Why it should not block: git status reads local repository metadata and exits.
+- Timeout: 10000 ms.
+- Expected result: Modified files are listed for final summary.
+## 2026-06-07 22:15 - read screenshot script
+- Command: Get-Content -Path scripts/vkr-screenshots.mjs -TotalCount 260
+- Expected: finite file read.
+- Why it should not block: Get-Content reads a bounded local script and exits.
+- Timeout: 10000 ms.
+- Expected result: Root screenshot orchestration script details are displayed.
+## 2026-06-07 22:15 - read frontend package scripts
+- Command: Get-Content -Path frontend/package.json
+- Expected: finite file read.
+- Why it should not block: Get-Content reads one local JSON file and exits.
+- Timeout: 10000 ms.
+- Expected result: Frontend npm scripts are displayed for screenshot generation instructions.
+## 2026-06-07 22:15 - read frontend screenshot script
+- Command: Get-Content -Path frontend/tests/e2e/vkr-screenshots.mjs -TotalCount 260
+- Expected: finite file read.
+- Why it should not block: Get-Content reads a bounded local script and exits.
+- Timeout: 10000 ms.
+- Expected result: Frontend screenshot orchestration script details are displayed.
+## 2026-06-07 22:16 - find root screenshot stages
+- Command: rg "--stage|stage ===|stage !==|capture" scripts/vkr-screenshots.mjs
+- Expected: finite text search.
+- Why it should not block: rg searches one local script and exits.
+- Timeout: 10000 ms.
+- Expected result: Stage handling and capture flow are displayed for precise screenshot instructions.
+## 2026-06-07 22:17 - find root screenshot stage handling safely
+- Command: rg -- "--stage|stage ===|stage !==|capture" scripts/vkr-screenshots.mjs
+- Expected: finite text search.
+- Why it should not block: rg searches one local script and exits.
+- Timeout: 10000 ms.
+- Expected result: Stage handling and capture flow are displayed for precise screenshot instructions.
+## 2026-06-07 22:18 - read screenshot main flow
+- Command: Get-Content -Path scripts/vkr-screenshots.mjs -Tail 130
+- Expected: finite file read.
+- Why it should not block: Get-Content reads the last 130 lines of one local script and exits.
+- Timeout: 10000 ms.
+- Expected result: Main stage switch and cleanup behavior are displayed.
+## 2026-06-07 22:25 - inspect dashboard heading
+- Command: rg --line-number "продолжим|выберите|heading|Typography" frontend/src/pages/Dashboard.tsx
+- Expected: finite text search.
+- Why it should not block: rg searches one local TSX file and exits.
+- Timeout: 10000 ms.
+- Expected result: Current dashboard heading text is displayed for screenshot selector fix.
+## 2026-06-07 22:25 - inspect screenshot waits
+- Command: rg --line-number "продолжим|выберите|waitFor\(\)|getByRole\('heading'" scripts/vkr-screenshots.mjs
+- Expected: finite text search.
+- Why it should not block: rg searches one local script and exits.
+- Timeout: 10000 ms.
+- Expected result: Current heading waits in the screenshot script are displayed.
+## 2026-06-07 22:27 - run full VKR screenshot script after selector fix
+- Command: node scripts\vkr-screenshots.mjs --stage=all
+- Expected: finite screenshot orchestration.
+- Why it should not block: The script starts Vite as a controlled child process, captures Playwright screenshots, stops the child in finally, and exits.
+- Timeout: 180000 ms.
+- Expected result: All VKR screenshots are regenerated or a concrete remaining selector/runtime error is reported.
+
+## 2026-06-07 22:28 - run full VKR screenshot script outside sandbox after frontend readiness timeout
+- Command: node scripts/vkr-screenshots.mjs --stage=all
+- Expected: finite screenshot orchestration.
+- Why it should not block: The script starts Vite as a controlled child process, captures Playwright screenshots, stops the child in finally, and exits.
+- Timeout: 180000 ms.
+- Expected result: All VKR screenshots are regenerated outside sandbox or a concrete remaining selector/runtime error is reported.
+
+## 2026-06-07 22:30 - inspect dashboard setup controls
+- Command: rg --line-number "Специализация|Новое mock|Настройка интервью|TextField|Select|Radio|Button|Доступные направления|Backend" frontend/src/pages/Dashboard.tsx
+- Expected: finite text search.
+- Why it should not block: rg searches one local TSX file and exits.
+- Timeout: 10000 ms.
+- Expected result: Setup modal controls and labels are displayed for screenshot script fix.
+## 2026-06-07 22:30 - read dashboard setup section
+- Command: Get-Content -Path frontend/src/pages/Dashboard.tsx | Select-Object -Skip 260 -First 110
+- Expected: finite bounded file read.
+- Why it should not block: Get-Content reads one file and Select-Object limits output before exiting.
+- Timeout: 10000 ms.
+- Expected result: Setup modal JSX section is displayed.
+## 2026-06-07 22:31 - inspect dashboard state defaults
+- Command: Get-Content -Path frontend/src/pages/Dashboard.tsx | Select-Object -First 140
+- Expected: finite bounded file read.
+- Why it should not block: Get-Content reads one file and Select-Object limits output before exiting.
+- Timeout: 10000 ms.
+- Expected result: Dashboard state initialization is displayed to confirm setup modal defaults.
+## 2026-06-07 22:31 - inspect mocked interview types
+- Command: rg --line-number "interview-types|Backend|levels|question_count" scripts/vkr-screenshots.mjs
+- Expected: finite text search.
+- Why it should not block: rg searches one local script and exits.
+- Timeout: 10000 ms.
+- Expected result: Mock interview type payload is displayed to verify setup modal content.
+## 2026-06-07 22:32 - read mock API later section
+- Command: Get-Content -Path scripts/vkr-screenshots.mjs | Select-Object -Skip 180 -First 120
+- Expected: finite bounded file read.
+- Why it should not block: Get-Content reads one file and Select-Object limits output before exiting.
+- Timeout: 10000 ms.
+- Expected result: Mock API route payloads are displayed for setup selector fix.
+## 2026-06-07 22:33 - read interview types API client
+- Command: Get-Content -Path frontend/src/api/interviewTypes.ts
+- Expected: finite file read.
+- Why it should not block: Get-Content reads one local TypeScript file and exits.
+- Timeout: 10000 ms.
+- Expected result: Exact interview-types endpoint path is displayed for mock API route.
+## 2026-06-07 22:33 - read interview type model
+- Command: rg --line-number "interface InterviewType|type InterviewType|question_counts|levels|title" frontend/src/types/interview.ts
+- Expected: finite text search.
+- Why it should not block: rg searches one local TypeScript file and exits.
+- Timeout: 10000 ms.
+- Expected result: InterviewType shape is displayed for mock API payload.
+## 2026-06-07 22:34 - read interview type interface details
+- Command: Get-Content -Path frontend/src/types/interview.ts | Select-Object -Skip 20 -First 45
+- Expected: finite bounded file read.
+- Why it should not block: Get-Content reads one file and Select-Object limits output before exiting.
+- Timeout: 10000 ms.
+- Expected result: InterviewType fields are displayed for mock API payload.
+
+## 2026-06-07 22:36 - rerun full VKR screenshot script outside sandbox after setup mock fix
+- Command: node scripts/vkr-screenshots.mjs --stage=all
+- Expected: finite screenshot orchestration.
+- Why it should not block: The script starts Vite as a controlled child process, captures Playwright screenshots, stops the child in finally, and exits.
+- Timeout: 180000 ms.
+- Expected result: All VKR screenshots are regenerated or a concrete remaining selector/runtime error is reported.
+
+## 2026-06-07 22:38 - inspect chat page headings
+- Command: rg --line-number "Typography|heading|role|specialization|interview_type_title|technology_stack|Введите ответ|Разбор" frontend/src/pages/ChatPage.tsx
+- Expected: finite text search.
+- Why it should not block: rg searches one local TSX file and exits.
+- Timeout: 10000 ms.
+- Expected result: Chat page heading and visible text dependencies are displayed.
+## 2026-06-07 22:38 - inspect current screenshot session payloads
+- Command: Get-Content -Path scripts/vkr-screenshots.mjs | Select-Object -Skip 55 -First 90
+- Expected: finite bounded file read.
+- Why it should not block: Get-Content reads one file and Select-Object limits output before exiting.
+- Timeout: 10000 ms.
+- Expected result: Mock session payloads are displayed for model alignment.
+## 2026-06-07 22:39 - inspect result page fields
+- Command: rg --line-number "interview_type_title|role|technology_stack|Разбор|recommendations|score|correctness|completeness|depth|communication" frontend/src/pages/InterviewResult.tsx
+- Expected: finite text search.
+- Why it should not block: rg searches one local TSX file and exits.
+- Timeout: 10000 ms.
+- Expected result: Result page visible field dependencies are displayed.
+## 2026-06-07 22:39 - read chat page data load section
+- Command: Get-Content -Path frontend/src/pages/ChatPage.tsx | Select-Object -First 130
+- Expected: finite bounded file read.
+- Why it should not block: Get-Content reads one file and Select-Object limits output before exiting.
+- Timeout: 10000 ms.
+- Expected result: Chat page API calls and state expectations are displayed.
+## 2026-06-07 22:40 - read interview enum values
+- Command: Get-Content -Path frontend/src/types/interview.ts | Select-Object -First 24
+- Expected: finite bounded file read.
+- Why it should not block: Get-Content reads one file and Select-Object limits output before exiting.
+- Timeout: 10000 ms.
+- Expected result: Interview status and stage enum values are displayed for mock session payloads.
+
+## 2026-06-07 22:42 - rerun full VKR screenshot script outside sandbox after session payload fix
+- Command: node scripts/vkr-screenshots.mjs --stage=all
+- Expected: finite screenshot orchestration.
+- Why it should not block: The script starts Vite as a controlled child process, captures Playwright screenshots, stops the child in finally, and exits.
+- Timeout: 180000 ms.
+- Expected result: All VKR screenshots are regenerated or a concrete remaining selector/runtime error is reported.
+
+## 2026-06-07 22:44 - inspect interviews API client
+- Command: Get-Content -Path frontend/src/api/interviews.ts
+- Expected: finite file read.
+- Why it should not block: Get-Content reads one local TypeScript file and exits.
+- Timeout: 10000 ms.
+- Expected result: Result endpoint paths are displayed for mock API route fix.
+## 2026-06-07 22:44 - read result page visible section
+- Command: Get-Content -Path frontend/src/pages/InterviewResult.tsx | Select-Object -Skip 100 -First 90
+- Expected: finite bounded file read.
+- Why it should not block: Get-Content reads one file and Select-Object limits output before exiting.
+- Timeout: 10000 ms.
+- Expected result: Result page heading and visible content are displayed for selector fix.
+## 2026-06-07 22:45 - read result page load section
+- Command: Get-Content -Path frontend/src/pages/InterviewResult.tsx | Select-Object -First 100
+- Expected: finite bounded file read.
+- Why it should not block: Get-Content reads one file and Select-Object limits output before exiting.
+- Timeout: 10000 ms.
+- Expected result: Result page data loading logic is displayed.
+## 2026-06-07 22:45 - inspect result interface details
+- Command: rg --line-number "interface InterviewResult|strengths|improvements|recommendations" frontend/src/types/interview.ts
+- Expected: finite text search.
+- Why it should not block: rg searches one local TypeScript file and exits.
+- Timeout: 10000 ms.
+- Expected result: InterviewResult shape is displayed for mock payload fix.
+## 2026-06-07 22:45 - read result interface block
+- Command: Get-Content -Path frontend/src/types/interview.ts | Select-Object -Skip 60 -First 25
+- Expected: finite bounded file read.
+- Why it should not block: Get-Content reads one file and Select-Object limits output before exiting.
+- Timeout: 10000 ms.
+- Expected result: Full InterviewResult interface is displayed.
+
+## 2026-06-07 22:47 - rerun full VKR screenshot script outside sandbox after result payload fix
+- Command: node scripts/vkr-screenshots.mjs --stage=all
+- Expected: finite screenshot orchestration.
+- Why it should not block: The script starts Vite as a controlled child process, captures Playwright screenshots, stops the child in finally, and exits.
+- Timeout: 180000 ms.
+- Expected result: All VKR screenshots are regenerated and README is updated.
+
+## 2026-06-07 22:48 - check final git status after screenshots
+- Command: git status --short
+- Expected: finite status check.
+- Why it should not block: git status reads local repository metadata and exits.
+- Timeout: 10000 ms.
+- Expected result: Modified files are listed for final summary.
+## 2026-06-07 22:48 - review screenshot script diff
+- Command: git diff -- scripts/vkr-screenshots.mjs
+- Expected: finite diff.
+- Why it should not block: git diff reads local repository metadata and exits.
+- Timeout: 10000 ms.
+- Expected result: Screenshot script changes are displayed for final summary.
+## 2026-06-07 23:02 - inspect screenshot take helper and setup flow
+- Command: rg --line-number "async function take|captureSetupPages|waitForTimeout|transition|dialog" scripts/vkr-screenshots.mjs
+- Expected: finite text search.
+- Why it should not block: rg searches one local script and exits.
+- Timeout: 10000 ms.
+- Expected result: Screenshot timing and setup capture flow are displayed for a targeted wait fix.
+## 2026-06-07 23:03 - read screenshot helper block
+- Command: Get-Content -Path scripts/vkr-screenshots.mjs | Select-Object -Skip 330 -First 95
+- Expected: finite bounded file read.
+- Why it should not block: Get-Content reads one file and Select-Object limits output before exiting.
+- Timeout: 10000 ms.
+- Expected result: Screenshot helper and setup capture implementation are displayed for patching.
+
+## 2026-06-07 23:05 - rerun setup VKR screenshots after animation fix
+- Command: node scripts/vkr-screenshots.mjs --stage=setup
+- Expected: finite screenshot orchestration for setup images.
+- Why it should not block: The script starts Vite as a controlled child process, captures two Playwright screenshots, stops the child in finally, and exits.
+- Timeout: 120000 ms.
+- Expected result: fig_03_interview_setup.png and fig_B03_interview_setup.png are regenerated with the dialog fully visible.
+
+## 2026-06-07 23:06 - check git status after setup screenshot fix
+- Command: git status --short
+- Expected: finite status check.
+- Why it should not block: git status reads local repository metadata and exits.
+- Timeout: 10000 ms.
+- Expected result: Modified files are listed for final summary.
+## 2026-06-07 23:06 - review screenshot script transition fix diff
+- Command: git diff -- scripts/vkr-screenshots.mjs
+- Expected: finite diff.
+- Why it should not block: git diff reads local repository metadata and exits.
+- Timeout: 10000 ms.
+- Expected result: Screenshot script changes are displayed for final summary.
+
+## 2026-06-07 - inspect yandex agent runtime setup
+
+- Command: `Get-ChildItem -Force backend; Get-Content backend/.env.example; if (Test-Path backend/.env) { "backend/.env exists" } else { "backend/.env missing" }`
+- Expected: finite command, not a background process.
+- Why it should not block: lists one directory, reads one small example env file, and checks existence of backend/.env.
+- Timeout: 10000 ms.
+- Expected result: identify backend environment layout without printing secret .env values.
+
+## 2026-06-07 - check yandex env variable presence
+
+- Command: sanitized PowerShell parser for `backend/.env` required Yandex keys.
+- Expected: finite command, not a background process.
+- Why it should not block: reads a small env file and prints only key presence, not secret values.
+- Timeout: 10000 ms.
+- Expected result: confirm whether LLM_MODE, folder id, api key, and three agent model variables are configured.
+
+## 2026-06-07 - run direct yandex agents validation
+
+- Command: finite inline Python script through `backend/venv/Scripts/python.exe -` with `LLM_MODE=yandex_agents`.
+- Expected: finite command, not a background process.
+- Why it should not block: performs exactly three awaited HTTP calls with YANDEX_AGENTS_TIMEOUT_SECONDS=60 and then exits.
+- Timeout: 220000 ms.
+- Expected result: JSON summary showing pass/fail for question generator, interviewer, and reviewer schema validation.
+
+## 2026-06-07 - rerun yandex agents validation with response body
+
+- Command: finite inline Python script that calls three Yandex agent methods and prints HTTP 400 response bodies without secrets.
+- Expected: finite command, not a background process.
+- Why it should not block: performs exactly three awaited HTTP calls with existing 60 second client timeout and exits.
+- Timeout: 220000 ms.
+- Expected result: detailed Yandex error body for each failing agent.
+
+## 2026-06-07 - list available yandex models
+
+- Command: finite inline Python script that calls `GET https://ai.api.cloud.yandex.net/v1/models` and compares configured model values without printing secrets.
+- Expected: finite command, not a background process.
+- Why it should not block: performs one HTTP GET with a 30 second timeout and exits.
+- Timeout: 60000 ms.
+- Expected result: count of available model IDs and whether configured model values exactly match any listed model ID.
+
+## 2026-06-07 - inspect yandex models list forbidden body
+
+- Command: finite inline Python script that calls `GET /v1/models` and prints HTTP status/body without secrets.
+- Expected: finite command, not a background process.
+- Why it should not block: performs one HTTP GET with a 30 second timeout and exits.
+- Timeout: 60000 ms.
+- Expected result: Yandex response body explaining the 403 models-list failure.
+
+## 2026-06-07 - validate schemas with base yandexgpt uri
+
+- Command: finite inline Python script that temporarily overrides three YANDEX_*_AGENT_MODEL values to `gpt://<folder>/yandexgpt/rc` and calls all three backend LLM methods.
+- Expected: finite command, not a background process.
+- Why it should not block: performs exactly three awaited HTTP calls with existing 60 second timeout and exits.
+- Timeout: 220000 ms.
+- Expected result: prove whether backend request format and JSON schemas work independently of copied agent model IDs.
+
+## 2026-06-07 - rerun base yandexgpt schema validation with safe output encoding
+
+- Command: finite inline Python script that temporarily overrides three model values to `gpt://<folder>/yandexgpt/rc`, calls all three backend LLM methods, and prints ASCII-safe JSON.
+- Expected: finite command, not a background process.
+- Why it should not block: performs exactly three awaited HTTP calls with existing 60 second timeout and exits.
+- Timeout: 220000 ms.
+- Expected result: visible pass/fail result for backend request format and JSON schema validation on a valid base model URI.
+
+## 2026-06-07 - recheck yandex env after model uri update
+
+- Command: sanitized PowerShell parser for `backend/.env` Yandex settings after user update.
+- Expected: finite command, not a background process.
+- Why it should not block: reads a small env file and prints only non-secret status/model URI shape.
+- Timeout: 10000 ms.
+- Expected result: confirm LLM_MODE and that three YANDEX_*_AGENT_MODEL values now look like model URIs.
+
+## 2026-06-07 - rerun direct yandex agents validation after env update
+
+- Command: finite inline Python script through `backend/venv/Scripts/python.exe -` using current `backend/.env`.
+- Expected: finite command, not a background process.
+- Why it should not block: performs exactly three awaited HTTP calls with YANDEX_AGENTS_TIMEOUT_SECONDS=60 and then exits.
+- Timeout: 220000 ms.
+- Expected result: JSON summary showing pass/fail for question generator, interviewer, and reviewer schema validation with real Yandex API responses.
+
+## 2026-06-07 - inspect docker compose env wiring
+
+- Command: `Get-Content docker-compose.yml; Get-Content backend/Dockerfile; Get-Content frontend/Dockerfile; Get-Content frontend/.env.example; Get-Content backend/.env.example`
+- Expected: finite command, not a background process.
+- Why it should not block: reads five small project configuration files and exits.
+- Timeout: 10000 ms.
+- Expected result: determine how Docker Compose passes environment variables and what the frontend/backend expect.
+
+## 2026-06-07 - inspect frontend/backend runtime scripts
+
+- Command: `Get-Content frontend/package.json; Get-ChildItem backend/scripts; Get-Content backend/scripts/seed_demo.py -TotalCount 80`
+- Expected: finite command, not a background process.
+- Why it should not block: reads package metadata and bounded seed script content, lists one scripts directory.
+- Timeout: 10000 ms.
+- Expected result: identify frontend dev/build scripts and whether demo data can be seeded for a real run.
+
+## 2026-06-07 - validate docker compose after volume fix
+
+- Command: `docker compose -f docker-compose.yml config`
+- Expected: finite command, not a background process.
+- Why it should not block: Docker Compose only renders and validates configuration, it does not start services.
+- Timeout: 30000 ms.
+- Expected result: resolved compose configuration without undefined volume errors.
+
+## 2026-06-07 - inspect backend requirements after docker build failure
+
+- Command: `Get-Content backend/requirements.txt`
+- Expected: finite command, not a background process.
+- Why it should not block: reads one small requirements file and exits.
+- Timeout: 10000 ms.
+- Expected result: identify pinned Python dependency versions causing Docker build failure.
+
+## 2026-06-07 - inspect local fastapi version
+
+- Command: `backend\venv\Scripts\python.exe -m pip show fastapi`
+- Expected: finite command, not a background process.
+- Why it should not block: pip show reads installed package metadata and exits.
+- Timeout: 10000 ms.
+- Expected result: local FastAPI version currently used by the working backend virtualenv.
+
+## 2026-06-07 - check pip access inside python docker image
+
+- Command: `docker run --rm python:3.11-slim python -m pip index versions fastapi`
+- Expected: finite command, not a background process.
+- Why it should not block: starts a short-lived container, runs one pip index query, and removes the container.
+- Timeout: 120000 ms.
+- Expected result: determine whether pip inside Docker can access package index and see FastAPI versions.
+
+## 2026-06-07 - check pip access inside python docker image with docker access
+
+- Command: `docker run --rm python:3.11-slim python -m pip index versions fastapi`
+- Expected: finite command, not a background process.
+- Why it should not block: starts a short-lived container, runs one pip index query, and removes the container.
+- Timeout: 120000 ms.
+- Expected result: determine whether pip inside Docker can access package index and see FastAPI versions.
+
+## 2026-06-07 - rebuild backend docker image after pip index check
+
+- Command: `docker compose -f docker-compose.yml -p imockinterview build backend`
+- Expected: finite command, not a background process.
+- Why it should not block: Docker Compose builds one backend image and exits after build completes or fails.
+- Timeout: 300000 ms.
+- Expected result: backend image builds successfully or returns a concrete package/network error.
+
+## 2026-06-07 - check sqlalchemy availability inside python docker image
+
+- Command: `docker run --rm python:3.11-slim python -m pip index versions sqlalchemy`
+- Expected: finite command, not a background process.
+- Why it should not block: starts a short-lived container, runs one pip index query, and removes the container.
+- Timeout: 120000 ms.
+- Expected result: determine whether pip inside Docker can access package index and see SQLAlchemy versions.
+
+## 2026-06-08 - inspect frontend api env usage for production compose
+
+- Command: `rg -n "VITE_API_URL|import.meta.env|baseURL" frontend/src frontend/.env.example frontend/Dockerfile`
+- Expected: finite command, not a background process.
+- Why it should not block: ripgrep scans bounded frontend files and exits.
+- Timeout: 10000 ms.
+- Expected result: determine whether production frontend build needs VITE_API_URL build-time wiring.
+
+## 2026-06-08 - validate production compose config
+
+- Command: `docker compose -f docker-compose-prod.yaml --env-file .env.prod.example config`
+- Expected: finite command, not a background process.
+- Why it should not block: Docker Compose only renders and validates configuration, it does not start or build services.
+- Timeout: 30000 ms.
+- Expected result: resolved production compose configuration without syntax errors.
+
+## 2026-06-08 - validate production compose config with example env file
+
+- Command: set `IMOCK_ENV_FILE=./.env.prod.example`, then `docker compose -f docker-compose-prod.yaml --env-file .env.prod.example config`.
+- Expected: finite command, not a background process.
+- Why it should not block: Docker Compose only renders and validates configuration, it does not start or build services.
+- Timeout: 30000 ms.
+- Expected result: resolved production compose configuration without syntax errors using the example env file.
