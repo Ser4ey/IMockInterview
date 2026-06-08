@@ -40,6 +40,7 @@ async def _serialize_interview_type(db: AsyncSession, item: InterviewType) -> di
         "technology_stack": item.technology_stack,
         "description": item.description,
         "levels": loads_list(item.levels),
+        "default_question_count": item.default_question_count,
         "is_active": item.is_active,
         "created_at": item.created_at,
         "updated_at": item.updated_at,

@@ -3,7 +3,10 @@ import asyncio
 from sqlalchemy import func, select
 
 from app.core.config import settings
+from app.core.security import verify_password
 from app.models.interview import InterviewType, Question
+from app.models.user import User
+from app.services.admin_bootstrap import ensure_admin_user
 from app.services.demo_seed import seed_demo_data
 from app.services.llm_client import (
     LLMInterviewerReply,
@@ -16,6 +19,40 @@ from tests.utils import ApiTestCase
 
 
 class LLMAndSeedTest(ApiTestCase):
+    def test_admin_bootstrap_creates_and_updates_admin_from_env(self):
+        old_email = settings.ADMIN_EMAIL
+        old_password = settings.ADMIN_PASSWORD
+        old_full_name = settings.ADMIN_FULL_NAME
+        try:
+            settings.ADMIN_EMAIL = "admin@example.com"
+            settings.ADMIN_PASSWORD = "123"
+            settings.ADMIN_FULL_NAME = "Production Admin"
+
+            async def run_bootstrap():
+                async with self.SessionLocal() as session:
+                    await ensure_admin_user(session)
+                async with self.SessionLocal() as session:
+                    user = await session.scalar(select(User).where(User.email == "admin@example.com"))
+                    count = await session.scalar(select(func.count(User.id)).where(User.email == "admin@example.com"))
+                    return user, count
+
+            user, count = asyncio.run(run_bootstrap())
+            self.assertEqual(count, 1)
+            self.assertEqual(user.role, "admin")
+            self.assertTrue(user.is_superuser)
+            self.assertTrue(user.is_active)
+            self.assertEqual(user.full_name, "Production Admin")
+            self.assertTrue(verify_password("123", user.hashed_password))
+
+            settings.ADMIN_PASSWORD = "changed123"
+            user, count = asyncio.run(run_bootstrap())
+            self.assertEqual(count, 1)
+            self.assertTrue(verify_password("changed123", user.hashed_password))
+        finally:
+            settings.ADMIN_EMAIL = old_email
+            settings.ADMIN_PASSWORD = old_password
+            settings.ADMIN_FULL_NAME = old_full_name
+
     def test_mock_question_generation_returns_structured_questions(self):
         interview_type = InterviewType(
             title="Backend Java-разработчик",

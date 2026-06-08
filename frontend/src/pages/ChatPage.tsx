@@ -315,6 +315,7 @@ const ChatPage: React.FC = () => {
                 {[
                   ['Роль', interview.role],
                   ['Уровень', levelLabels[interview.level] || interview.level],
+                  ['Вопросов', interview.question_limit ? String(interview.question_limit) : 'Все доступные'],
                   ['Стек', interview.technology_stack],
                 ].map(([label, value]) => (
                   <Box key={label} sx={{ px: 1.5, py: 1.1, borderRadius: '12px', bgcolor: 'rgba(238,243,232,0.72)' }}>

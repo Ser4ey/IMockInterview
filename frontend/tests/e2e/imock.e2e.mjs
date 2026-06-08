@@ -261,7 +261,7 @@ async function main() {
   await page.getByPlaceholder('Введите ответ кандидата...').fill('ArrayList основан на массиве, LinkedList на связном списке.');
   await page.getByLabel('Отправить ответ').click();
   await expectVisible(page.getByText('ArrayList основан на массиве'));
-  await expectVisible(page.getByText(/Ответ пока раскрыт не полностью|Уточните/));
+  await expectVisible(page.getByText('Этап: Уточнение'));
 
   if (consoleErrors.length > 0) {
     throw new Error(`Browser console errors:\n${consoleErrors.join('\n')}`);

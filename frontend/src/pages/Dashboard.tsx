@@ -21,9 +21,10 @@ import {
   Select,
   Snackbar,
   Stack,
+  TextField,
   Typography,
 } from '@mui/material';
-import { Add as AddIcon, AutoAwesome, Insights, QueryStats, TrendingUp } from '@mui/icons-material';
+import { Add as AddIcon, Assessment, AutoAwesome, Chat, Insights, QueryStats, TrendingUp } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { createInterview, getInterviews } from '../api/interviews';
 import { getInterviewTypes } from '../api/interviewTypes';
@@ -60,7 +61,14 @@ const Dashboard: React.FC = () => {
   const [newInterviewData, setNewInterviewData] = useState<CreateInterviewRequest>({
     interview_type_id: 0,
     level: 'junior',
+    question_count: null,
   });
+
+  const resolveDefaultQuestionCount = (type: InterviewType | undefined, level: string): number | null => {
+    const available = type?.question_counts?.[level] ?? 0;
+    if (!type || !available) return null;
+    return Math.min(Math.max(type.default_question_count || 1, 1), available);
+  };
 
   useEffect(() => {
     loadDashboard();
@@ -69,9 +77,11 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     if (interviewTypes.length && !newInterviewData.interview_type_id) {
       const firstType = interviewTypes[0];
+      const firstLevel = firstType.levels[0] || 'junior';
       setNewInterviewData({
         interview_type_id: firstType.id,
-        level: firstType.levels[0] || 'junior',
+        level: firstLevel,
+        question_count: resolveDefaultQuestionCount(firstType, firstLevel),
       });
     }
   }, [interviewTypes, newInterviewData.interview_type_id]);
@@ -81,6 +91,35 @@ const Dashboard: React.FC = () => {
     [interviewTypes, newInterviewData.interview_type_id],
   );
   const selectedQuestionCount = selectedType?.question_counts?.[newInterviewData.level] ?? 0;
+  const selectedDefaultQuestionCount = resolveDefaultQuestionCount(selectedType, newInterviewData.level);
+
+  const updateSelectedType = (interviewTypeId: number) => {
+    const nextType = interviewTypes.find((item) => item.id === interviewTypeId);
+    const nextLevel = nextType?.levels[0] || 'junior';
+    setNewInterviewData({
+      interview_type_id: interviewTypeId,
+      level: nextLevel,
+      question_count: resolveDefaultQuestionCount(nextType, nextLevel),
+    });
+  };
+
+  const updateSelectedLevel = (level: string) => {
+    setNewInterviewData({
+      ...newInterviewData,
+      level,
+      question_count: resolveDefaultQuestionCount(selectedType, level),
+    });
+  };
+
+  const updateQuestionCount = (value: string) => {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed) || !selectedQuestionCount) {
+      setNewInterviewData({ ...newInterviewData, question_count: null });
+      return;
+    }
+    const nextCount = Math.min(Math.max(Math.trunc(parsed), 1), selectedQuestionCount);
+    setNewInterviewData({ ...newInterviewData, question_count: nextCount });
+  };
 
   const loadDashboard = async () => {
     setLoadError(null);
@@ -257,11 +296,40 @@ const Dashboard: React.FC = () => {
                           </Typography>
                           <Chip label={levelLabels[interview.level] || interview.level} size="small" variant="outlined" />
                           <Chip label={interview.role} size="small" variant="outlined" />
+                          {interview.question_limit && <Chip label={`${interview.question_limit} вопросов`} size="small" variant="outlined" />}
                         </Box>
                       }
                       secondary={`Этап: ${stageLabels[interview.stage] || interview.stage}. Создано: ${new Date(interview.started_at).toLocaleDateString('ru-RU')}`}
                     />
-                    <Chip label={interview.status === InterviewStatus.ACTIVE ? 'Активно' : 'Завершено'} color={interview.status === InterviewStatus.ACTIVE ? 'success' : 'default'} size="small" sx={{ flexShrink: 0, mt: 0.5 }} />
+                    <Stack spacing={1} alignItems="flex-end" sx={{ flexShrink: 0, mt: 0.5 }}>
+                      <Chip label={interview.status === InterviewStatus.ACTIVE ? 'Активно' : 'Завершено'} color={interview.status === InterviewStatus.ACTIVE ? 'success' : 'default'} size="small" />
+                      {interview.status === InterviewStatus.FINISHED && (
+                        <Stack direction="row" gap={1} flexWrap="wrap" justifyContent="flex-end">
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            startIcon={<Assessment />}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              navigate(`/interviews/${interview.id}/result`);
+                            }}
+                          >
+                            Результат
+                          </Button>
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            startIcon={<Chat />}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              navigate(`/interviews/${interview.id}`);
+                            }}
+                          >
+                            Диалог
+                          </Button>
+                        </Stack>
+                      )}
+                    </Stack>
                   </ListItemButton>
                 ))}
               </List>
@@ -285,11 +353,7 @@ const Dashboard: React.FC = () => {
                 value={newInterviewData.interview_type_id || ''}
                 label="Тип собеседования"
                 onChange={(event) => {
-                  const nextType = interviewTypes.find((item) => item.id === Number(event.target.value));
-                  setNewInterviewData({
-                    interview_type_id: Number(event.target.value),
-                    level: nextType?.levels[0] || 'junior',
-                  });
+                  updateSelectedType(Number(event.target.value));
                 }}
               >
                 {interviewTypes.map((item) => (
@@ -304,7 +368,7 @@ const Dashboard: React.FC = () => {
               <Select
                 value={newInterviewData.level}
                 label="Уровень"
-                onChange={(event) => setNewInterviewData({ ...newInterviewData, level: event.target.value })}
+                onChange={(event) => updateSelectedLevel(event.target.value)}
               >
                 {(selectedType?.levels || []).map((level) => (
                   <MenuItem value={level} key={level}>
@@ -313,6 +377,21 @@ const Dashboard: React.FC = () => {
                 ))}
               </Select>
             </FormControl>
+            <TextField
+              fullWidth
+              margin="normal"
+              type="number"
+              label="Количество вопросов"
+              value={newInterviewData.question_count ?? ''}
+              disabled={!selectedQuestionCount}
+              inputProps={{ min: 1, max: selectedQuestionCount || 1 }}
+              onChange={(event) => updateQuestionCount(event.target.value)}
+              helperText={
+                selectedQuestionCount
+                  ? `Можно выбрать от 1 до ${selectedQuestionCount}. Дефолт для направления: ${selectedDefaultQuestionCount}.`
+                  : 'Для выбранного уровня пока нет активных вопросов.'
+              }
+            />
             {selectedType && (
               <Paper variant="outlined" sx={{ mt: 2, p: 2, borderRadius: '16px', bgcolor: 'rgba(238,243,232,0.7)' }}>
                 <Typography variant="subtitle2">{selectedType.role}</Typography>
@@ -331,7 +410,7 @@ const Dashboard: React.FC = () => {
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3 }}>
           <Button onClick={() => setOpenDialog(false)}>Отмена</Button>
-          <Button onClick={handleCreateInterview} variant="contained" disabled={!newInterviewData.interview_type_id || !selectedQuestionCount || creating}>
+          <Button onClick={handleCreateInterview} variant="contained" disabled={!newInterviewData.interview_type_id || !selectedQuestionCount || !newInterviewData.question_count || creating}>
             {creating ? 'Создаю...' : 'Начать интервью'}
           </Button>
         </DialogActions>

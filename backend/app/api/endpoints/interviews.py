@@ -167,6 +167,7 @@ def _serialize_session(session: InterviewSession) -> dict[str, Any]:
         "stage": session.stage,
         "current_question_id": session.current_question_id,
         "question_index": session.question_index,
+        "question_limit": session.question_limit,
         "started_at": session.started_at,
         "finished_at": session.finished_at,
     }

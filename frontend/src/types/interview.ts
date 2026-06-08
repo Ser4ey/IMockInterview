@@ -31,6 +31,7 @@ export interface InterviewType {
   technology_stack: string;
   description: string;
   levels: string[];
+  default_question_count: number;
   is_active: boolean;
   created_at: string;
   updated_at?: string | null;
@@ -49,6 +50,7 @@ export interface InterviewSession {
   stage: InterviewStage;
   current_question_id?: number | null;
   question_index: number;
+  question_limit?: number | null;
   started_at: string;
   finished_at?: string | null;
 }
@@ -86,6 +88,7 @@ export interface InterviewTurn {
 export interface CreateInterviewRequest {
   interview_type_id: number;
   level: string;
+  question_count?: number | null;
 }
 
 export interface SendInterviewMessageRequest {
@@ -131,4 +134,10 @@ export interface GenerationJob {
   error_message?: string | null;
   created_at: string;
   finished_at?: string | null;
+}
+
+export interface LlmStatus {
+  llm_mode: string;
+  provider: string;
+  question_agent_configured: boolean;
 }

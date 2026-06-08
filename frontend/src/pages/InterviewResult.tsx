@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Alert, Box, Button, Chip, CircularProgress, Container, Grid, LinearProgress, Paper, Stack, Typography } from '@mui/material';
-import { ArrowBack, CheckCircle, Psychology, TipsAndUpdates, Warning } from '@mui/icons-material';
+import { ArrowBack, Chat, CheckCircle, Psychology, TipsAndUpdates, Warning } from '@mui/icons-material';
 import { getInterview, getInterviewResult } from '../api/interviews';
 import { getApiErrorMessage } from '../api/errors';
 import { InterviewStatus } from '../types/interview';
@@ -85,9 +85,14 @@ const InterviewResult: React.FC = () => {
 
   return (
     <Container maxWidth="xl" sx={{ px: { xs: 0, md: 1 }, mb: 4 }}>
-      <Button startIcon={<ArrowBack />} onClick={() => navigate('/dashboard')} sx={{ mb: 2 }}>
-        К панели
-      </Button>
+      <Stack direction="row" gap={1} flexWrap="wrap" sx={{ mb: 2 }}>
+        <Button startIcon={<ArrowBack />} onClick={() => navigate('/dashboard')}>
+          К панели
+        </Button>
+        <Button variant="outlined" startIcon={<Chat />} onClick={() => navigate(`/interviews/${id}`)}>
+          История диалога
+        </Button>
+      </Stack>
 
       <Grid container spacing={3}>
         <Grid size={{ xs: 12, md: 4 }}>

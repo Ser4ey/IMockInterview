@@ -26,6 +26,9 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "changeme_in_production_please_secret_key_for_jwt"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    ADMIN_EMAIL: str = ""
+    ADMIN_PASSWORD: str = ""
+    ADMIN_FULL_NAME: str = "Администратор IMock"
     
     # LLM / Yandex AI Studio Agents
     LLM_MODE: str = "mock"

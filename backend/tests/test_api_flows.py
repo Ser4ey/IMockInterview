@@ -106,12 +106,13 @@ class ApiFlowTest(ApiTestCase):
         create_response = self.client.post(
             "/api/v1/interviews",
             headers=headers,
-            json={"interview_type_id": interview_type_id, "level": "junior"},
+            json={"interview_type_id": interview_type_id, "level": "junior", "question_count": 1},
         )
         self.assertEqual(create_response.status_code, 200, create_response.text)
         interview = create_response.json()
         self.assertEqual(interview["interview_type_title"], "Backend Java-разработчик")
         self.assertEqual(interview["stage"], "question")
+        self.assertEqual(interview["question_limit"], 1)
 
         messages_response = self.client.get(f"/api/v1/interviews/{interview['id']}/messages", headers=headers)
         self.assertEqual(messages_response.status_code, 200, messages_response.text)
@@ -122,11 +123,13 @@ class ApiFlowTest(ApiTestCase):
         answer_response = self.client.post(
             f"/api/v1/interviews/{interview['id']}/messages",
             headers=headers,
-            json={"content": "ArrayList основан на массиве, LinkedList на связном списке."},
+            json={"content": "ArrayList основан на массиве, LinkedList на связном списке, поэтому первый обычно лучше для быстрого доступа по индексу, а второй может быть полезен при частых вставках в середину при наличии ссылки на узел."},
         )
         self.assertEqual(answer_response.status_code, 200, answer_response.text)
         self.assertEqual(answer_response.json()["messages"][0]["sender"], "user")
         self.assertIsNotNone(answer_response.json()["messages"][0]["question_id"])
+        self.assertEqual(answer_response.json()["session"]["status"], "finished")
+        self.assertTrue(answer_response.json()["result"]["strengths"])
 
         finish_response = self.client.post(f"/api/v1/interviews/{interview['id']}/finish", headers=headers)
         self.assertEqual(finish_response.status_code, 200, finish_response.text)

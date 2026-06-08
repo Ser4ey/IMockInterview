@@ -15,6 +15,10 @@ SQLITE_COLUMNS: dict[str, dict[str, str]] = {
         "interview_type_id": "INTEGER",
         "current_question_id": "INTEGER",
         "question_index": "INTEGER NOT NULL DEFAULT 0",
+        "question_limit": "INTEGER",
+    },
+    "interview_types": {
+        "default_question_count": "INTEGER NOT NULL DEFAULT 3",
     },
     "interview_messages": {
         "question_id": "INTEGER",

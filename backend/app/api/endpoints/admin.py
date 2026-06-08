@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.api import deps
+from app.core.config import settings
 from app.models.interview import InterviewType, Question, QuestionGenerationJob
 from app.models.user import User
 from app.schemas.interview import (
@@ -21,6 +22,7 @@ from app.schemas.interview import (
 )
 from app.services.question_generation import question_generation_service
 from app.services.question_quality import build_question_hash
+from app.services.llm_client import llm_client
 from app.services.serialization import dumps_list, loads_list
 
 router = APIRouter()
@@ -29,6 +31,19 @@ router = APIRouter()
 @router.get("/health")
 async def health() -> Any:
     return {"status": "ok", "service": "IMock API"}
+
+
+@router.get("/llm-status")
+async def llm_status(_: User = Depends(deps.get_current_admin_user)) -> Any:
+    return {
+        "llm_mode": settings.LLM_MODE,
+        "provider": getattr(llm_client, "provider", "unknown"),
+        "question_agent_configured": bool(
+            settings.YANDEX_API_KEY
+            and settings.YANDEX_FOLDER_ID
+            and settings.YANDEX_QUESTION_AGENT_MODEL
+        ),
+    }
 
 
 @router.get("/interview-types", response_model=list[InterviewTypeRead])
@@ -56,6 +71,7 @@ async def create_interview_type(
         technology_stack=payload.technology_stack,
         description=payload.description,
         levels=dumps_list(payload.levels),
+        default_question_count=payload.default_question_count,
         is_active=payload.is_active,
     )
     db.add(item)
@@ -260,6 +276,7 @@ async def _serialize_interview_type(db: AsyncSession, item: InterviewType) -> di
         "technology_stack": item.technology_stack,
         "description": item.description,
         "levels": loads_list(item.levels),
+        "default_question_count": item.default_question_count,
         "is_active": item.is_active,
         "created_at": item.created_at,
         "updated_at": item.updated_at,

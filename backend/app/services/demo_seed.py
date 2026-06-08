@@ -119,6 +119,7 @@ async def _upsert_interview_type(
     item.technology_stack = technology_stack
     item.description = description
     item.levels = dumps_list(["junior", "middle", "senior"])
+    item.default_question_count = 3
     item.is_active = True
     await db.flush()
     return item

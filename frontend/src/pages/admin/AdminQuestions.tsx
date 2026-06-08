@@ -22,9 +22,15 @@ const AdminQuestions: React.FC = () => {
     try {
       const nextTypes = await getAdminInterviewTypes();
       setTypes(nextTypes);
-      const nextTypeId = filterTypeId || nextTypes[0]?.id || 0;
-      setFilterTypeId(nextTypeId);
-      setQuestions(nextTypeId ? await getAdminQuestions({ interview_type_id: nextTypeId, level: filterLevel, include_disabled: true }) : []);
+      setQuestions(
+        nextTypes.length
+          ? await getAdminQuestions({
+              ...(filterTypeId ? { interview_type_id: filterTypeId } : {}),
+              level: filterLevel,
+              include_disabled: true,
+            })
+          : [],
+      );
     } catch (loadError) {
       setError(getApiErrorMessage(loadError, 'Не удалось загрузить банк вопросов'));
     }
@@ -75,7 +81,8 @@ const AdminQuestions: React.FC = () => {
             <Stack spacing={2} sx={{ mt: 2 }}>
               <FormControl fullWidth>
                 <InputLabel>Тип</InputLabel>
-                <Select value={filterTypeId || ''} label="Тип" onChange={(event) => setFilterTypeId(Number(event.target.value))}>
+                <Select value={filterTypeId} label="Тип" onChange={(event) => setFilterTypeId(Number(event.target.value))}>
+                  <MenuItem value={0}>Все типы</MenuItem>
                   {types.map((item) => (
                     <MenuItem key={item.id} value={item.id}>{item.title}</MenuItem>
                   ))}
@@ -106,23 +113,30 @@ const AdminQuestions: React.FC = () => {
             <Stack spacing={2}>
               {questions.map((question) => (
                 <Paper key={question.id} variant="outlined" sx={{ p: 2.5, borderRadius: '14px', bgcolor: question.is_active ? 'rgba(251,248,241,0.72)' : 'rgba(238,238,238,0.72)' }}>
-                  <Box display="flex" justifyContent="space-between" gap={2} alignItems="flex-start">
+                  <Stack spacing={1.75}>
                     <Box>
-                      <Typography variant="h6">{question.question_text}</Typography>
-                      <Typography color="text.secondary" sx={{ mt: 1 }}>{question.expected_answer}</Typography>
-                      <Stack direction="row" gap={1} flexWrap="wrap" sx={{ mt: 1.5 }}>
-                        {question.source?.title && <Chip label={`Источник: ${question.source.title}`} size="small" variant="outlined" />}
-                        {question.question_hash && <Chip label={`hash: ${question.question_hash.slice(0, 8)}`} size="small" variant="outlined" />}
-                      </Stack>
-                      <Stack direction="row" gap={1} flexWrap="wrap" sx={{ mt: 1.5 }}>
-                        {question.evaluation_criteria.map((item) => <Chip key={item} label={item} />)}
-                        {question.tags.map((item) => <Chip key={item} label={item} variant="outlined" />)}
-                      </Stack>
+                      <Typography variant="h6" sx={{ overflowWrap: 'anywhere' }}>{question.question_text}</Typography>
+                      <Typography color="text.secondary" sx={{ mt: 1, overflowWrap: 'anywhere' }}>{question.expected_answer}</Typography>
                     </Box>
-                    <Button variant="outlined" startIcon={question.is_active ? <Block /> : <CheckCircle />} onClick={() => toggleQuestion(question)}>
+                    <Stack direction="row" gap={1} flexWrap="wrap">
+                      {question.source?.title && <Chip label={`Источник: ${question.source.title}`} size="small" variant="outlined" />}
+                      {question.question_hash && <Chip label={`hash: ${question.question_hash.slice(0, 8)}`} size="small" variant="outlined" />}
+                    </Stack>
+                    <Stack direction="row" gap={1} flexWrap="wrap">
+                      {question.evaluation_criteria.map((item) => <Chip key={item} label={item} />)}
+                      {question.tags.map((item) => <Chip key={item} label={item} variant="outlined" />)}
+                    </Stack>
+                    <Box display="flex" justifyContent="flex-end">
+                      <Button
+                        variant="outlined"
+                        startIcon={question.is_active ? <Block /> : <CheckCircle />}
+                        onClick={() => toggleQuestion(question)}
+                        sx={{ minWidth: 132, whiteSpace: 'nowrap' }}
+                      >
                       {question.is_active ? 'Отключить' : 'Включить'}
-                    </Button>
-                  </Box>
+                      </Button>
+                    </Box>
+                  </Stack>
                 </Paper>
               ))}
             </Stack>

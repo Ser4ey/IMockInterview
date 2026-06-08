@@ -43,6 +43,7 @@ class InterviewType(Base):
     technology_stack = Column(Text, nullable=False, default="")
     description = Column(Text, nullable=False, default="")
     levels = Column(Text, nullable=False, default='["junior", "middle", "senior"]')
+    default_question_count = Column(Integer, nullable=False, default=3)
     is_active = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
@@ -119,6 +120,7 @@ class InterviewSession(Base):
     stage = Column(String, nullable=False, default=InterviewStage.CREATED.value)
     current_question_id = Column(Integer, ForeignKey("questions.id"), nullable=True)
     question_index = Column(Integer, nullable=False, default=0)
+    question_limit = Column(Integer, nullable=True)
     started_at = Column(DateTime(timezone=True), server_default=func.now())
     finished_at = Column(DateTime(timezone=True), nullable=True)
 

@@ -1,5 +1,5 @@
 import client from './client';
-import type { GenerationJob, InterviewType, Question } from '../types/interview';
+import type { GenerationJob, InterviewType, LlmStatus, Question } from '../types/interview';
 
 export interface CreateInterviewTypePayload {
   title: string;
@@ -7,6 +7,7 @@ export interface CreateInterviewTypePayload {
   technology_stack: string;
   description: string;
   levels: string[];
+  default_question_count: number;
   is_active: boolean;
   auto_generate_questions?: boolean;
   questions_per_level?: number;
@@ -24,6 +25,11 @@ export interface CreateQuestionPayload {
 
 export const getAdminInterviewTypes = async (): Promise<InterviewType[]> => {
   const response = await client.get<InterviewType[]>('/admin/interview-types');
+  return response.data;
+};
+
+export const getAdminLlmStatus = async (): Promise<LlmStatus> => {
+  const response = await client.get<LlmStatus>('/admin/llm-status');
   return response.data;
 };
 

@@ -39,6 +39,11 @@ class InterviewEngine:
         if not questions:
             raise ValueError("Для выбранного типа и уровня пока нет активных вопросов")
 
+        question_limit = self._resolve_question_limit(
+            requested_count=interview_in.question_count,
+            default_count=interview_type.default_question_count,
+            available_count=len(questions),
+        )
         first_question = questions[0]
         session = InterviewSession(
             user_id=user_id,
@@ -47,6 +52,7 @@ class InterviewEngine:
             stage=InterviewStage.QUESTION.value,
             current_question_id=first_question.id,
             question_index=0,
+            question_limit=question_limit,
         )
         db.add(session)
         await db.flush()
@@ -224,6 +230,9 @@ class InterviewEngine:
         return list(result.scalars().all())
 
     async def _get_next_question(self, db: AsyncSession, session: InterviewSession) -> Question | None:
+        if session.question_limit and session.question_index + 1 >= session.question_limit:
+            return None
+
         questions = await self._get_active_questions(db, session.interview_type_id, session.level)
         current_ids = [question.id for question in questions]
         if session.current_question_id not in current_ids:
@@ -289,6 +298,20 @@ class InterviewEngine:
 
     def _needs_follow_up(self, content: str) -> bool:
         return len(content.strip()) < 120
+
+    def _resolve_question_limit(
+        self,
+        requested_count: int | None,
+        default_count: int | None,
+        available_count: int,
+    ) -> int:
+        if requested_count is not None:
+            if requested_count > available_count:
+                raise ValueError("Количество вопросов не может превышать доступный банк для выбранного уровня")
+            return requested_count
+
+        resolved_default = max(default_count or 1, 1)
+        return min(resolved_default, available_count)
 
     def _format_question(self, question: Question, index: int) -> str:
         tags = loads_list(question.tags)
