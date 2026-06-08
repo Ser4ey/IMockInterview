@@ -12,6 +12,7 @@ from app.models.interview import (
 
 
 ALLOWED_LEVELS = {"junior", "middle", "senior"}
+MAX_INTERVIEW_QUESTION_COUNT = 10
 
 
 def normalize_level(value: str) -> str:
@@ -27,7 +28,7 @@ class InterviewTypeBase(BaseModel):
     technology_stack: str = Field(default="", max_length=1000)
     description: str = Field(default="", max_length=3000)
     levels: list[str] = Field(default_factory=lambda: ["junior", "middle", "senior"])
-    default_question_count: int = Field(default=3, ge=1, le=100)
+    default_question_count: int = Field(default=3, ge=1, le=MAX_INTERVIEW_QUESTION_COUNT)
     is_active: bool = True
 
     @field_validator("levels")
@@ -54,7 +55,7 @@ class InterviewTypeUpdate(BaseModel):
     technology_stack: Optional[str] = Field(default=None, max_length=1000)
     description: Optional[str] = Field(default=None, max_length=3000)
     levels: Optional[list[str]] = None
-    default_question_count: Optional[int] = Field(default=None, ge=1, le=100)
+    default_question_count: Optional[int] = Field(default=None, ge=1, le=MAX_INTERVIEW_QUESTION_COUNT)
     is_active: Optional[bool] = None
 
     @field_validator("levels")
@@ -169,7 +170,7 @@ class QuestionGenerationJobRead(BaseModel):
 class InterviewSessionCreate(BaseModel):
     interview_type_id: int
     level: str
-    question_count: Optional[int] = Field(default=None, ge=1, le=100)
+    question_count: Optional[int] = Field(default=None, ge=1, le=MAX_INTERVIEW_QUESTION_COUNT)
 
     @field_validator("level")
     @classmethod

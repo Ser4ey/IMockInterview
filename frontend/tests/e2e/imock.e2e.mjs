@@ -12,6 +12,8 @@ const backendPort = 18000;
 const frontendPort = 15173;
 const backendUrl = `http://127.0.0.1:${backendPort}`;
 const frontendUrl = `http://127.0.0.1:${frontendPort}`;
+const demoAdminEmail = 'admin@example.com';
+const demoAdminPassword = 'admin123';
 function resolveBackendPython() {
   if (process.env.IMOCK_BACKEND_PYTHON) {
     return process.env.IMOCK_BACKEND_PYTHON;
@@ -173,7 +175,11 @@ async function main() {
     String(backendPort),
   ], {
     cwd: backendDir,
-    env: normalizedEnv({ BACKEND_CORS_ORIGINS: frontendUrl }),
+    env: normalizedEnv({
+      BACKEND_CORS_ORIGINS: frontendUrl,
+      ADMIN_EMAIL: demoAdminEmail,
+      ADMIN_PASSWORD: demoAdminPassword,
+    }),
   });
 
   const frontendCommand = process.platform === 'win32' ? 'cmd.exe' : 'npm';
@@ -209,8 +215,8 @@ async function main() {
 
   await gotoApp(page, `${frontendUrl}/login`);
   await expectVisible(page.getByRole('heading', { name: 'Вход в аккаунт' }));
-  await page.getByLabel('Email').fill('admin@example.com');
-  await page.getByLabel('Пароль').fill('admin123');
+  await page.getByLabel('Email').fill(demoAdminEmail);
+  await page.getByLabel('Пароль').fill(demoAdminPassword);
   await page.locator('form').getByRole('button', { name: 'Войти' }).click();
 
   await expectVisible(page.getByRole('heading', { name: /выберите собеседование из банка IMock/i }));

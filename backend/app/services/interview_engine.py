@@ -20,6 +20,7 @@ from app.services.llm_client import LLMEvaluation, LLMInterviewerReply, llm_clie
 from app.services.serialization import dumps_list, loads_list
 
 logger = logging.getLogger(__name__)
+MAX_INTERVIEW_QUESTION_COUNT = 10
 
 
 class InterviewEngine:
@@ -306,12 +307,14 @@ class InterviewEngine:
         available_count: int,
     ) -> int:
         if requested_count is not None:
+            if requested_count > MAX_INTERVIEW_QUESTION_COUNT:
+                raise ValueError("Количество вопросов в интервью не может превышать 10")
             if requested_count > available_count:
                 raise ValueError("Количество вопросов не может превышать доступный банк для выбранного уровня")
             return requested_count
 
         resolved_default = max(default_count or 1, 1)
-        return min(resolved_default, available_count)
+        return min(resolved_default, available_count, MAX_INTERVIEW_QUESTION_COUNT)
 
     def _format_question(self, question: Question, index: int) -> str:
         tags = loads_list(question.tags)

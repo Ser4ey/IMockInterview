@@ -48,6 +48,8 @@ const stageLabels: Record<string, string> = {
   finished: 'Завершено',
 };
 
+const maxInterviewQuestionCount = 10;
+
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -67,7 +69,7 @@ const Dashboard: React.FC = () => {
   const resolveDefaultQuestionCount = (type: InterviewType | undefined, level: string): number | null => {
     const available = type?.question_counts?.[level] ?? 0;
     if (!type || !available) return null;
-    return Math.min(Math.max(type.default_question_count || 1, 1), available);
+    return Math.min(Math.max(type.default_question_count || 1, 1), available, maxInterviewQuestionCount);
   };
 
   useEffect(() => {
@@ -91,6 +93,7 @@ const Dashboard: React.FC = () => {
     [interviewTypes, newInterviewData.interview_type_id],
   );
   const selectedQuestionCount = selectedType?.question_counts?.[newInterviewData.level] ?? 0;
+  const selectedMaxQuestionCount = Math.min(selectedQuestionCount, maxInterviewQuestionCount);
   const selectedDefaultQuestionCount = resolveDefaultQuestionCount(selectedType, newInterviewData.level);
 
   const updateSelectedType = (interviewTypeId: number) => {
@@ -113,11 +116,11 @@ const Dashboard: React.FC = () => {
 
   const updateQuestionCount = (value: string) => {
     const parsed = Number(value);
-    if (!Number.isFinite(parsed) || !selectedQuestionCount) {
+    if (!Number.isFinite(parsed) || !selectedMaxQuestionCount) {
       setNewInterviewData({ ...newInterviewData, question_count: null });
       return;
     }
-    const nextCount = Math.min(Math.max(Math.trunc(parsed), 1), selectedQuestionCount);
+    const nextCount = Math.min(Math.max(Math.trunc(parsed), 1), selectedMaxQuestionCount);
     setNewInterviewData({ ...newInterviewData, question_count: nextCount });
   };
 
@@ -136,7 +139,7 @@ const Dashboard: React.FC = () => {
   };
 
   const handleCreateInterview = async () => {
-    if (!newInterviewData.interview_type_id || !selectedQuestionCount) return;
+    if (!newInterviewData.interview_type_id || !selectedMaxQuestionCount) return;
     setCreating(true);
     setActionError(null);
     try {
@@ -383,12 +386,12 @@ const Dashboard: React.FC = () => {
               type="number"
               label="Количество вопросов"
               value={newInterviewData.question_count ?? ''}
-              disabled={!selectedQuestionCount}
-              inputProps={{ min: 1, max: selectedQuestionCount || 1 }}
+              disabled={!selectedMaxQuestionCount}
+              inputProps={{ min: 1, max: selectedMaxQuestionCount || 1 }}
               onChange={(event) => updateQuestionCount(event.target.value)}
               helperText={
-                selectedQuestionCount
-                  ? `Можно выбрать от 1 до ${selectedQuestionCount}. Дефолт для направления: ${selectedDefaultQuestionCount}.`
+                selectedMaxQuestionCount
+                  ? `Можно выбрать от 1 до ${selectedMaxQuestionCount}. В банке доступно: ${selectedQuestionCount}. Дефолт: ${selectedDefaultQuestionCount}.`
                   : 'Для выбранного уровня пока нет активных вопросов.'
               }
             />
@@ -410,7 +413,7 @@ const Dashboard: React.FC = () => {
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3 }}>
           <Button onClick={() => setOpenDialog(false)}>Отмена</Button>
-          <Button onClick={handleCreateInterview} variant="contained" disabled={!newInterviewData.interview_type_id || !selectedQuestionCount || !newInterviewData.question_count || creating}>
+          <Button onClick={handleCreateInterview} variant="contained" disabled={!newInterviewData.interview_type_id || !selectedMaxQuestionCount || !newInterviewData.question_count || creating}>
             {creating ? 'Создаю...' : 'Начать интервью'}
           </Button>
         </DialogActions>

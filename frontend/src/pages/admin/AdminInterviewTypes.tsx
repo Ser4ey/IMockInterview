@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, Box, Button, Checkbox, Chip, Container, FormControl, FormControlLabel, Grid, InputLabel, MenuItem, Paper, Select, Stack, TextField, Typography } from '@mui/material';
+import { Alert, Box, Button, Checkbox, Chip, Container, FormControl, FormControlLabel, Grid, InputLabel, MenuItem, Paper, Select, Snackbar, Stack, TextField, Typography } from '@mui/material';
 import { Add, AutoAwesome } from '@mui/icons-material';
 import { createAdminInterviewType, generateAdminQuestions, getAdminInterviewTypes, getAdminLlmStatus } from '../../api/admin';
 import type { GenerationJob, InterviewType, LlmStatus } from '../../types/interview';
 import { getApiErrorMessage } from '../../api/errors';
 
 const levels = ['junior', 'middle', 'senior'];
+const maxInterviewQuestionCount = 10;
 
 const AdminInterviewTypes: React.FC = () => {
   const [items, setItems] = useState<InterviewType[]>([]);
@@ -13,6 +14,7 @@ const AdminInterviewTypes: React.FC = () => {
   const [latestJob, setLatestJob] = useState<GenerationJob | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
+  const [generationNotice, setGenerationNotice] = useState<string | null>(null);
   const [form, setForm] = useState({
     title: 'Backend Java-разработчик',
     role: 'Backend Java-разработчик',
@@ -58,6 +60,10 @@ const AdminInterviewTypes: React.FC = () => {
 
   const createType = async () => {
     try {
+      setError(null);
+      if (form.auto_generate_questions) {
+        setGenerationNotice(`Генерация успешно запущена: ${form.questions_per_level} вопросов для каждого выбранного уровня.`);
+      }
       await createAdminInterviewType(form);
       await load();
     } catch (createError) {
@@ -81,6 +87,8 @@ const AdminInterviewTypes: React.FC = () => {
     if (!generationForm.interview_type_id) return;
     setGenerating(true);
     setError(null);
+    setLatestJob(null);
+    setGenerationNotice(`Генерация успешно запущена: ${generationForm.requested_count} вопросов для уровня ${generationForm.level}.`);
     try {
       const job = await generateAdminQuestions(
         generationForm.interview_type_id,
@@ -111,9 +119,14 @@ const AdminInterviewTypes: React.FC = () => {
                 type="number"
                 label="Вопросов по умолчанию"
                 value={form.default_question_count}
-                inputProps={{ min: 1, max: 100 }}
-                onChange={(event) => setForm({ ...form, default_question_count: Math.max(1, Number(event.target.value) || 1) })}
-                helperText="Этот лимит будет подставлен пользователю при запуске интервью."
+                inputProps={{ min: 1, max: maxInterviewQuestionCount }}
+                onChange={(event) =>
+                  setForm({
+                    ...form,
+                    default_question_count: Math.min(Math.max(1, Number(event.target.value) || 1), maxInterviewQuestionCount),
+                  })
+                }
+                helperText="Этот лимит будет подставлен пользователю при запуске интервью. Максимум: 10."
               />
               <Stack direction="row" gap={1} flexWrap="wrap">
                 {levels.map((level) => (
@@ -273,6 +286,16 @@ const AdminInterviewTypes: React.FC = () => {
           </Paper>
         </Grid>
       </Grid>
+      <Snackbar
+        open={!!generationNotice}
+        autoHideDuration={6000}
+        onClose={() => setGenerationNotice(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert severity="info" onClose={() => setGenerationNotice(null)} sx={{ width: '100%' }}>
+          {generationNotice}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };
